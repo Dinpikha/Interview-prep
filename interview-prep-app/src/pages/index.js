@@ -1,0 +1,8 @@
+export { default as LandingPage } from './LandingPage'
+export { default as LoginPage } from './LoginPage'
+export { default as WelcomePage } from './WelcomePage'
+export { default as HomePage } from './HomePage'
+export { default as MockInterviewPage } from './MockInterviewPage'
+export { default as ResumeAnalyzerPage } from './ResumeAnalyzerPage'
+export { default as AIMentorPage } from './AIMentorPage'
+export { default as DashboardPage } from './DashboardPage'
