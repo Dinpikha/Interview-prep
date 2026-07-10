@@ -2,10 +2,11 @@ import { useNavigate } from 'react-router-dom'
 import { Flame, Target, TrendingUp, Trophy } from 'lucide-react'
 import { dashboardStats } from '../../data/dashboardStats'
 import { ROUTES } from '../../constants/routes'
-import { Button, PageHeader, StatCard } from '../../components/ui'
+import { Button, PageHeader, StatCard, SummarySection } from '../../components/ui'
 import QuickActions from './QuickActions'
 import RecentActivity from './RecentActivity'
 import RecommendedInterviews from './RecommendedInterviews'
+import { useEffect, useState } from "react";
 
 const statIcons = {
   interviews: Trophy,
@@ -14,11 +15,47 @@ const statIcons = {
   resumes: Target,
 }
 
-export default function HomePage() {
-  const navigate = useNavigate()
 
+export default function HomePage() {
+  const [summary,setSummary]=useState("");
+  const navigate = useNavigate()
+  const userId = localStorage.getItem("user_id");
+
+
+  useEffect(() => {
+      async function fetchSummary() {
+          const userId = localStorage.getItem("user_id");
+
+          const response = await fetch("http://localhost:8000/return_summary", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                  user_id: userId
+              })
+          });
+
+          const data = await response.json();
+          setSummary(data.summary);
+      }
+
+      fetchSummary();
+  }, []);
+    const summaryPoints = summary
+    ? summary
+        .split("\n")
+        .filter(line => line.trim() !== "" && line.startsWith("-"))
+        .map(line => line.replace("-", "").trim())
+    : [];
   return (
+    
     <div>
+    <SummarySection
+        title="What MentorAI Knows About You"
+        description="A personalized profile built from your conversations, resume, and progress to help MentorAI give more relevant guidance.."
+        points={summaryPoints}
+      />
       <PageHeader
         title="Welcome back!"
         description="Continue your interview prep journey. Pick up where you left off or explore something new."

@@ -29,7 +29,7 @@ export default function WelcomePage() {
         <Sparkles className="h-8 w-8" />
       </span>
       <h1 className="text-2xl font-semibold text-foreground">
-        Welcome back{user?.username ? `, ${user.username}` : ''}!
+        Welcome {user?.username ? `, ${user.username}` : ''}!
       </h1>
       <p className="text-sm text-muted">Getting things ready for you...</p>
     </div>

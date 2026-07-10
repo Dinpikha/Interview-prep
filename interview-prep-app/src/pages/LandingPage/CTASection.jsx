@@ -15,7 +15,7 @@ export default function CTASection() {
         <p className="mx-auto mt-3 max-w-lg text-sm text-muted md:text-base">
           Join thousands of candidates who are preparing smarter with AI-powered tools.
         </p>
-        <Button size="lg" className="mt-8" onClick={() => navigate(ROUTES.HOME)}>
+        <Button size="lg" className="mt-8" onClick={() => navigate(ROUTES.LOGIN)}>
           Get Started for Free
           <ArrowRight className="h-4 w-4" />
         </Button>

@@ -1,0 +1,49 @@
+import { emitToast } from './toastBus'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
+export async function apiRequest(path, options = {}) {
+  let response
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      ...options,
+    })
+  } catch {
+    const message = 'Unable to reach the server. Check your connection and try again.'
+    emitToast({ variant: 'error', title: 'Connection error', message })
+    throw new ApiError(message, 0)
+  }
+
+  let data = null
+  try {
+    data = await response.json()
+  } catch {
+    // no/invalid JSON body
+  }
+
+  if (!response.ok) {
+    // FastAPI's HTTPException(detail="...") lands here as data.detail
+    const message = data?.detail || data?.message || `Something went wrong (${response.status}).`
+    emitToast({ variant: 'error', title: 'Request failed', message })
+    throw new ApiError(message, response.status)
+  }
+
+  return data
+}
+
+// Example tailored to your endpoint
+export function getModelResponse(payload) {
+  return apiRequest('/get_model_response', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}

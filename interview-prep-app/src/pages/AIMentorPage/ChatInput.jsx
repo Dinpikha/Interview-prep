@@ -1,7 +1,15 @@
 import { Send } from 'lucide-react'
 import { Button, Input } from '../../components/ui'
+import WebSearchToggle from './WebSearchToggle'
 
-export default function ChatInput({ value, onChange, onSend, disabled }) {
+export default function ChatInput({
+  value,
+  onChange,
+  onSend,
+  disabled,
+  webSearchEnabled,
+  onToggleWebSearch,
+}) {
   const handleSubmit = (e) => {
     e.preventDefault()
 
@@ -12,6 +20,11 @@ export default function ChatInput({ value, onChange, onSend, disabled }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2">
+      <WebSearchToggle
+        enabled={webSearchEnabled}
+        onToggle={onToggleWebSearch}
+        disabled={disabled}
+      />
       <Input
         placeholder="Ask your AI mentor anything..."
         value={value}
