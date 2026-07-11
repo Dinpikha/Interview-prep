@@ -80,7 +80,7 @@ export function MentorChatProvider({ children }) {
 
         setMessages((prev) => [...prev, assistantMessage])
       } catch (err) {
-        // apiRequest already surfaced this as a toast — nothing else to do.
+       
         console.error(err)
       } finally {
         setIsTyping(false)

@@ -27,11 +27,11 @@ export async function apiRequest(path, options = {}) {
   try {
     data = await response.json()
   } catch {
-    // no/invalid JSON body
+   
   }
 
   if (!response.ok) {
-    // FastAPI's HTTPException(detail="...") lands here as data.detail
+    
     const message = data?.detail || data?.message || `Something went wrong (${response.status}).`
     emitToast({ variant: 'error', title: 'Request failed', message })
     throw new ApiError(message, response.status)

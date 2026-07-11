@@ -19,9 +19,10 @@ def get_text_and_links(pdf_path):
     for page in doc:
         for link in page.get_links():
             if "uri" in link and counter < len(labels):
-                Links[labels[counter]].append(link["uri"])
+                Links[labels[counter].lower()].append(link["uri"])
                 counter += 1
 
     doc.close()
 
     return dict(Links), markdown
+

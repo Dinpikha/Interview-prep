@@ -4,12 +4,11 @@ import tempfile,os
 from fastapi import UploadFile,File
 from fastapi.middleware.cors import CORSMiddleware
 from backend.ai_mentor_backend.connecting_files_logic import ai_mentor
-from backend.resume_analyzer_backend.read_doc import get_text_and_links
 from Database.db import signup,login,delete_user,user_exists_,create_session,enter_data,get_prev_summary,update_summary,insert_summary
 from fastapi import HTTPException
 from backend.ai_mentor_backend.get_embeddings import get_embeddings
 from backend.ai_mentor_backend.get_summary import get_summary
-
+from backend.resume_analyzer_backend.scoring.score_calculator import analyze_resume
 app=FastAPI()
 
 frontend_url="http://localhost:5174/ai-mentor"
@@ -156,21 +155,19 @@ async def get_extracted_text(pdf: UploadFile = File(...)):
         temp_path = temp_file.name
 
     try:
-        links, text = get_text_and_links(temp_path)
+        response= analyze_resume(temp_path)
 
         return {
             "success": True,
-            "links": links,
-            "text": text
+            "response":response
         }
 
     except Exception as e:
         print(e)
         raise HTTPException(
             status_code=500,
-            detail="Unable to process the uploaded resume."
+            detail=str(e)
         )
-
     finally:
         os.remove(temp_path)
 
