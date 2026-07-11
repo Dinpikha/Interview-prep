@@ -75,7 +75,7 @@ export default function Sidebar({ isOpen, onClose, className }) {
         </nav>
 
         <div className="border-t border-border p-4">
-          <p className="text-xs text-muted-foreground">Interview Prep v1.0</p>
+          <p className="text-xs text-muted-foreground">Interview Prep with ease</p>
         </div>
       </aside>
     </>
