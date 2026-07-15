@@ -12,10 +12,10 @@ function getTimestamp() {
   })
 }
 
-async function createSession(userId) {
+async function createSession(user_id) {
   const data = await apiRequest('/create_session', {
     method: 'POST',
-    body: JSON.stringify({ user_id: userId }),
+    body: JSON.stringify({ user_id: user_id }),
   })
   if (data?.success && data.session_id) {
     localStorage.setItem('session_id', data.session_id)
@@ -32,21 +32,20 @@ export function MentorChatProvider({ children }) {
   const [sessionId, setSessionId] = useState(() => localStorage.getItem('session_id'))
   const sessionCreated = useRef(false)
 
-  // Runs once for the whole app (not per page-visit), so switching tabs
-  // and coming back to AI Mentor never touches this.
+
   useEffect(() => {
     if (sessionCreated.current || sessionId) return
     sessionCreated.current = true
 
-    const userId = localStorage.getItem('user_id')
-    createSession(userId)
+    const user_id = localStorage.getItem('user_id')
+    createSession(user_id)
       .then((id) => id && setSessionId(id))
       .catch((err) => console.error(err))
   }, [sessionId])
 
   const sendMessage = useCallback(
     async (content) => {
-      const userId = localStorage.getItem('user_id')
+      const user_id = localStorage.getItem('user_id')
 
       const userMessage = {
         id: String(Date.now()),
@@ -60,12 +59,12 @@ export function MentorChatProvider({ children }) {
       setIsTyping(true)
 
       try {
-        const data = await apiRequest('/get_model_response', {
+        const data = await apiRequest('/ai_mentor', {
           method: 'POST',
           body: JSON.stringify({
             user_prompt: content,
             web_search: webSearchEnabled,
-            user_id: userId,
+            user_id: user_id,
             session_id: sessionId,
             role: 'user',
           }),
@@ -92,13 +91,13 @@ export function MentorChatProvider({ children }) {
   // The ONLY thing that should ever clear the conversation — wired to an
   // explicit "New Chat" button, never to navigation/unmount.
   const startNewChat = useCallback(async () => {
-    const userId = localStorage.getItem('user_id')
+    const user_id = localStorage.getItem('user_id')
     setMessages(mentorMessages)
     setInput('')
     setIsTyping(false)
 
     try {
-      const id = await createSession(userId)
+      const id = await createSession(user_id)
       if (id) setSessionId(id)
     } catch (err) {
       console.error(err)

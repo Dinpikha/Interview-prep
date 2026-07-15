@@ -3,45 +3,19 @@ import StatsOverview from './StatsOverview'
 import WeeklyProgress from './WeeklyProgress'
 import PerformanceBreakdown from './PerformanceBreakdown'
 import ActivityTimeline from './ActivityTimeline'
-import { useState,useEffect } from 'react'
+import { useProfileSummary } from '../../hooks'
+
 export default function DashboardPage() {
-   const [summary,setSummary]=useState("");
-  
-  const userId = localStorage.getItem("user_id");
+  const { profile, loading, error } = useProfileSummary()
 
-
-  useEffect(() => {
-      async function fetchSummary() {
-          const userId = localStorage.getItem("user_id");
-
-          const response = await fetch("http://localhost:8000/return_summary", {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                  user_id: userId
-              })
-          });
-
-          const data = await response.json();
-          setSummary(data.summary);
-      }
-
-      fetchSummary();
-  }, []);
-    const summaryPoints = summary
-    ? summary
-        .split("\n")
-        .filter(line => line.trim() !== "" && line.startsWith("-"))
-        .map(line => line.replace("-", "").trim())
-    : [];
   return (
     <div>
-    <SummarySection
+      <SummarySection
         title="Report Summary"
-        
-        points={summaryPoints}
+        description="A snapshot of what your mentor knows about your goals and progress."
+        profile={profile}
+        loading={loading}
+        error={error}
       />
 
       <PageHeader

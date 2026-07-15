@@ -40,10 +40,9 @@ export async function apiRequest(path, options = {}) {
   return data
 }
 
-// Example tailored to your endpoint
-export function getModelResponse(payload) {
-  return apiRequest('/get_model_response', {
+export function getProfileSummary(userId) {
+  return apiRequest('/return_summary', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ user_id: userId }),
   })
 }

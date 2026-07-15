@@ -7,81 +7,145 @@ import {
   Code2,
   Globe,
   ListChecks,
+  Flame,
+  Info,
+  ShieldCheck,
 } from 'lucide-react'
-import {
-  Badge,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  EmptyState,
-} from '../../components/ui'
+import { Badge, Card, CardContent, CardHeader, CardTitle, EmptyState } from '../../components/ui'
 
-const scoreVariant = (score) => {
+const tier = (score) => {
   if (typeof score !== 'number') return 'default'
   if (score >= 70) return 'success'
   if (score >= 40) return 'warning'
   return 'danger'
 }
 
-const impactVariant = (impact) => {
-  const value = (impact || '').toLowerCase()
-  if (value === 'high') return 'danger'
-  if (value === 'medium') return 'warning'
-  return 'primary'
+const IMPACT_CONFIG = {
+  high: { icon: Flame, border: 'border-l-danger', badge: 'danger' },
+  medium: { icon: AlertTriangle, border: 'border-l-warning', badge: 'warning' },
+  low: { icon: Info, border: 'border-l-primary', badge: 'primary' },
 }
 
 function ScoreRing({ score }) {
+  const pct = Math.max(0, Math.min(100, score ?? 0))
+  const radius = 42
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (pct / 100) * circumference
+  const strokeColor =
+    tier(score) === 'success'
+      ? 'var(--color-success)'
+      : tier(score) === 'warning'
+        ? 'var(--color-warning)'
+        : 'var(--color-danger)'
+
   return (
-    <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full border-4 border-border">
-      <span className="text-2xl font-semibold text-foreground">{score ?? '–'}</span>
-      <span className="text-[10px] uppercase tracking-wide text-muted">score</span>
+    <div className="relative flex h-28 w-28 shrink-0 items-center justify-center">
+      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+        <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--color-border)" strokeWidth="8" />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+        />
+      </svg>
+      <div className="absolute flex flex-col items-center">
+        <span className="text-3xl font-bold leading-none text-foreground">{score ?? '–'}</span>
+        <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          out of 100
+        </span>
+      </div>
     </div>
   )
 }
 
-function SectionCard({ title, score, summary, positives, positivesLabel, negatives, negativesLabel }) {
-  if (!score && !summary && !positives?.length && !negatives?.length) return null
+function ScoreBar({ score, size = 'md' }) {
+  const pct = Math.max(0, Math.min(100, score ?? 0))
+  const color =
+    tier(score) === 'success' ? 'bg-success' : tier(score) === 'warning' ? 'bg-warning' : 'bg-danger'
+  const height = size === 'sm' ? 'h-1' : 'h-1.5'
 
   return (
-    <div className="rounded-lg border border-border bg-background p-4">
-      <div className="mb-2 flex items-center justify-between gap-3">
+    <div className={`${height} w-full overflow-hidden rounded-full bg-border`}>
+      <div
+        className={`h-full rounded-full ${color} transition-all duration-500`}
+        style={{ width: `${pct}%` }}
+      />
+    </div>
+  )
+}
+
+function QuickScore({ label, score }) {
+  if (typeof score !== 'number') return null
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-muted">{label}</span>
+        <span className="text-xs font-semibold text-foreground">{score}</span>
+      </div>
+      <ScoreBar score={score} size="sm" />
+    </div>
+  )
+}
+
+function TagList({ items, tone }) {
+  if (!items?.length) return null
+  const toneClass =
+    tone === 'positive'
+      ? 'border-success/30 bg-success/10 text-success'
+      : 'border-danger/30 bg-danger/10 text-danger'
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((item, i) => (
+        <span
+          key={i}
+          className={`rounded-md border px-2 py-1 text-xs leading-tight ${toneClass}`}
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function SectionCard({ title, score, summary, positives, negatives, negativesLabel }) {
+  if (score == null && !summary && !positives?.length && !negatives?.length) return null
+
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+      <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-foreground">{title}</p>
-        {typeof score === 'number' && <Badge variant={scoreVariant(score)}>{score}/100</Badge>}
+        {typeof score === 'number' && <span className="text-sm font-semibold text-foreground">{score}</span>}
       </div>
 
-      {summary && <p className="mb-3 text-sm text-muted">{summary}</p>}
+      {typeof score === 'number' && <ScoreBar score={score} />}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {positives?.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground">{positivesLabel}</p>
-            <ul className="space-y-1">
-              {positives.map((item, i) => (
-                <li key={i} className="flex gap-1.5 text-xs text-foreground">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+      {summary && <p className="text-xs leading-relaxed text-muted">{summary}</p>}
 
-        {negatives?.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground">{negativesLabel}</p>
-            <ul className="space-y-1">
-              {negatives.map((item, i) => (
-                <li key={i} className="flex gap-1.5 text-xs text-foreground">
-                  <XCircle className="h-3.5 w-3.5 shrink-0 text-danger" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+      {positives?.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Working well
+          </p>
+          <TagList items={positives} tone="positive" />
+        </div>
+      )}
+
+      {negatives?.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            {negativesLabel}
+          </p>
+          <TagList items={negatives} tone="negative" />
+        </div>
+      )}
     </div>
   )
 }
@@ -99,7 +163,7 @@ function LinkStatus({ icon: Icon, label, data }) {
       </span>
       <div className="min-w-0">
         <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted">{data.feedback}</p>
+        <p className="text-xs leading-relaxed text-muted">{data.feedback}</p>
       </div>
     </div>
   )
@@ -141,29 +205,53 @@ export default function AnalysisResults({ hasResults, analysis }) {
     final_recommendation: finalRecommendation,
   } = analysis
 
+  const quickScores = [
+    { label: 'ATS', score: ats?.score },
+    { label: 'Experience', score: experience?.score },
+    { label: 'Projects', score: projects?.score },
+    { label: 'Skills', score: skills?.score },
+    { label: 'Education', score: education?.score },
+  ].filter((s) => typeof s.score === 'number')
+
   return (
     <div className="space-y-6">
+      {/* Hero */}
       <Card>
-        <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center">
-          <ScoreRing score={overallScore} />
-          <div className="space-y-1">
-            <CardTitle>{summary?.headline || 'Resume Analysis'}</CardTitle>
-            <CardDescription>{summary?.overview}</CardDescription>
+        <CardContent className="space-y-6 pt-6">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+            <ScoreRing score={overallScore} />
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold text-foreground">
+                {summary?.headline || 'Resume Analysis'}
+              </h2>
+              <p className="text-sm leading-relaxed text-muted">{summary?.overview}</p>
+            </div>
           </div>
+
+          {quickScores.length > 0 && (
+            <div className="grid gap-4 border-t border-border pt-5 sm:grid-cols-2 lg:grid-cols-5">
+              {quickScores.map((s) => (
+                <QuickScore key={s.label} label={s.label} score={s.score} />
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
+      {/* Strengths / Weaknesses */}
       {(strengths.length > 0 || weaknesses.length > 0) && (
         <Card>
-          <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
+          <CardContent className="grid gap-6 pt-6 sm:grid-cols-2 sm:divide-x sm:divide-border">
             {strengths.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted">Strengths</p>
-                <ul className="space-y-1.5">
+              <div className="space-y-2.5">
+                <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                  Strengths
+                </p>
+                <ul className="space-y-2">
                   {strengths.map((item, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-foreground">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                      <span>{item}</span>
+                    <li key={i} className="text-sm leading-relaxed text-foreground">
+                      {item}
                     </li>
                   ))}
                 </ul>
@@ -171,13 +259,15 @@ export default function AnalysisResults({ hasResults, analysis }) {
             )}
 
             {weaknesses.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted">Weaknesses</p>
-                <ul className="space-y-1.5">
+              <div className="space-y-2.5 sm:pl-6">
+                <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
+                  <XCircle className="h-3.5 w-3.5 text-danger" />
+                  Weaknesses
+                </p>
+                <ul className="space-y-2">
                   {weaknesses.map((item, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-foreground">
-                      <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
-                      <span>{item}</span>
+                    <li key={i} className="text-sm leading-relaxed text-foreground">
+                      {item}
                     </li>
                   ))}
                 </ul>
@@ -187,6 +277,7 @@ export default function AnalysisResults({ hasResults, analysis }) {
         </Card>
       )}
 
+      {/* Priority improvements */}
       {priorityImprovements.length > 0 && (
         <Card>
           <CardHeader>
@@ -196,35 +287,40 @@ export default function AnalysisResults({ hasResults, analysis }) {
             </div>
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
-            {priorityImprovements.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-start justify-between gap-3 rounded-lg border border-border bg-background p-3"
-              >
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">{item.title}</p>
-                  <p className="text-xs text-muted">{item.reason}</p>
+            {priorityImprovements.map((item, i) => {
+              const config = IMPACT_CONFIG[(item.impact || '').toLowerCase()] || IMPACT_CONFIG.low
+              const ImpactIcon = config.icon
+              return (
+                <div
+                  key={i}
+                  className={`flex items-start gap-3 rounded-lg border border-border border-l-4 ${config.border} bg-background p-4`}
+                >
+                  <ImpactIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-foreground">{item.title}</p>
+                      <Badge variant={config.badge}>{item.impact}</Badge>
+                    </div>
+                    <p className="text-xs leading-relaxed text-muted">{item.reason}</p>
+                  </div>
                 </div>
-                <Badge variant={impactVariant(item.impact)} className="shrink-0">
-                  {item.impact}
-                </Badge>
-              </div>
-            ))}
+              )
+            })}
           </CardContent>
         </Card>
       )}
 
+      {/* Section breakdown */}
       <Card>
         <CardHeader>
           <CardTitle>Section Breakdown</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 pt-4">
+        <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
           <SectionCard
             title="ATS Compatibility"
             score={ats?.score}
             summary={ats?.summary}
             positives={ats?.passed_checks}
-            positivesLabel="Passed checks"
             negatives={ats?.failed_checks}
             negativesLabel="Failed checks"
           />
@@ -233,7 +329,6 @@ export default function AnalysisResults({ hasResults, analysis }) {
             score={experience?.score}
             summary={experience?.summary}
             positives={experience?.strengths}
-            positivesLabel="Strengths"
             negatives={experience?.improvements}
             negativesLabel="Improvements"
           />
@@ -242,7 +337,6 @@ export default function AnalysisResults({ hasResults, analysis }) {
             score={projects?.score}
             summary={projects?.summary}
             positives={projects?.strengths}
-            positivesLabel="Strengths"
             negatives={projects?.improvements}
             negativesLabel="Improvements"
           />
@@ -251,7 +345,6 @@ export default function AnalysisResults({ hasResults, analysis }) {
             score={skills?.score}
             summary={skills?.summary}
             positives={skills?.strengths}
-            positivesLabel="Strengths"
             negatives={skills?.missing_skills}
             negativesLabel="Missing skills"
           />
@@ -259,6 +352,7 @@ export default function AnalysisResults({ hasResults, analysis }) {
         </CardContent>
       </Card>
 
+      {/* Links */}
       {links && (
         <Card>
           <CardHeader>
@@ -272,30 +366,54 @@ export default function AnalysisResults({ hasResults, analysis }) {
         </Card>
       )}
 
+      {/* Verdict */}
       {finalRecommendation && (
-        <Card>
-          <CardContent className="space-y-3 pt-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm font-medium text-foreground">Ready to apply?</p>
-              <Badge variant={finalRecommendation.ready_for_applications ? 'success' : 'warning'}>
-                {finalRecommendation.ready_for_applications ? 'Ready' : 'Not yet'}
-                {typeof finalRecommendation.confidence === 'number' &&
-                  ` · ${finalRecommendation.confidence}% confidence`}
-              </Badge>
+        <div
+          className={`rounded-xl border p-5 ${
+            finalRecommendation.ready_for_applications
+              ? 'border-success/30 bg-success/5'
+              : 'border-warning/30 bg-warning/5'
+          }`}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                  finalRecommendation.ready_for_applications
+                    ? 'bg-success/15 text-success'
+                    : 'bg-warning/15 text-warning'
+                }`}
+              >
+                <ShieldCheck className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-base font-semibold text-foreground">
+                  {finalRecommendation.ready_for_applications
+                    ? 'Ready to apply'
+                    : 'Not quite ready yet'}
+                </p>
+                {typeof finalRecommendation.confidence === 'number' && (
+                  <p className="text-xs text-muted">
+                    {finalRecommendation.confidence}% confidence
+                  </p>
+                )}
+              </div>
             </div>
+          </div>
 
-            {finalRecommendation.next_steps?.length > 0 && (
-              <ul className="space-y-1.5">
-                {finalRecommendation.next_steps.map((step, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-foreground">
-                    <span className="mt-0.5 text-muted">{i + 1}.</span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+          {finalRecommendation.next_steps?.length > 0 && (
+            <ol className="mt-4 space-y-2.5 border-t border-border pt-4">
+              {finalRecommendation.next_steps.map((step, i) => (
+                <li key={i} className="flex gap-3 text-sm text-foreground">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-semibold text-secondary-foreground">
+                    {i + 1}
+                  </span>
+                  <span className="leading-relaxed">{step}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
       )}
     </div>
   )

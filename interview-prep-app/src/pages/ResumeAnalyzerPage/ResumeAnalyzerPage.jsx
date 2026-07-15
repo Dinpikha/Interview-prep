@@ -35,23 +35,20 @@ export default function ResumeAnalyzerPage() {
     setIsAnalyzing(true)
     try {
       const formData = new FormData()
-
+      const user_id = localStorage.getItem("user_id");
       formData.append('pdf', selectedFile)
-      // NOTE: role and job_description aren't read by /extract_text yet —
-      // the endpoint only declares `pdf: UploadFile`, so FastAPI silently
-      // ignores these extra fields. Sending them now so the backend can
-      // start reading them as soon as that param is added.
+      formData.append("user_id", user_id)
       formData.append('role', effectiveRole)
       formData.append('job_description', jobDescription)
-
-      const response = await fetch('http://127.0.0.1:8000/extract_text', {
+      
+      const response = await fetch('http://127.0.0.1:8000/resume_analyzer', {
         method: 'POST',
         body: formData,
       })
       const data = await response.json()
-
+      console.log(data);
       // Backend shape: { success, response: { success, analysis: {...} } }
-      setAnalysis(data?.response?.analysis ?? null)
+      setAnalysis(data?.response ?? null)
       setHasResults(true)
     } catch (err) {
       console.error('Resume analysis failed:', err)

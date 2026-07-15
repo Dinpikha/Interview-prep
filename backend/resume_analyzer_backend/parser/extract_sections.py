@@ -1,7 +1,7 @@
 from __future__ import annotations
 import re
 from typing import Any
-# from read_doc import get_text_and_links
+
 SECTION_ALIASES = {
     "summary": "summary",
     "professional summary": "summary",

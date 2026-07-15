@@ -1,6 +1,5 @@
 from transformers import AutoTokenizer, AutoModel
 import torch
-import torch.nn.functional as F
 
 tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-small-en-v1.5")
 model = AutoModel.from_pretrained("BAAI/bge-small-en-v1.5")
