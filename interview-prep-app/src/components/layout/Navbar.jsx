@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { LogOut, Menu, Sparkles } from 'lucide-react'
+import { KeyRound, LogOut, Menu, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ROUTES } from '../../constants/routes'
 import { useAuth } from '../../context/AuthContext'
 import { cn } from '../../lib/cn'
@@ -63,32 +64,48 @@ export default function Navbar({ onMenuClick, className }) {
           <button
             type="button"
             onClick={() => setIsMenuOpen((open) => !open)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-sm font-medium text-secondary-foreground transition-all hover:bg-secondary/80 active:scale-95"
             aria-label="Open profile menu"
             aria-expanded={isMenuOpen}
           >
             {initials}
           </button>
 
-          {isMenuOpen && (
-            <div className="absolute right-0 top-11 w-44 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
-              {user?.username && (
-                <div className="border-b border-border px-3 py-2">
-                  <p className="truncate text-sm font-medium text-foreground">
-                    {user.username}
-                  </p>
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-danger transition-colors hover:bg-secondary"
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="absolute right-0 top-11 w-48 overflow-hidden rounded-lg border border-border bg-card shadow-lg"
               >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-            </div>
-          )}
+                {user?.username && (
+                  <div className="border-b border-border px-3 py-2">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {user.username}
+                    </p>
+                  </div>
+                )}
+                <Link
+                  to={ROUTES.CHANGE_PASSWORD}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-secondary"
+                >
+                  <KeyRound className="h-4 w-4" />
+                  Change password
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-danger transition-colors hover:bg-secondary"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>

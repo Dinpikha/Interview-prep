@@ -2,11 +2,15 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { ROUTES } from '../constants/routes'
 import {
   AIMentorPage,
+  ChangePasswordPage,
   DashboardPage,
+  ForgotPasswordPage,
+  GithubCallbackPage,
   HomePage,
   LandingPage,
   LoginPage,
   MockInterviewPage,
+  ResetPasswordPage,
   ResumeAnalyzerPage,
   WelcomePage,
 } from '../pages'
@@ -20,6 +24,18 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.LOGIN,
     element: <LoginPage />,
+  },
+  {
+    path: ROUTES.FORGOT_PASSWORD,
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: ROUTES.RESET_PASSWORD,
+    element: <ResetPasswordPage />,
+  },
+  {
+    path: ROUTES.GITHUB_CALLBACK,
+    element: <GithubCallbackPage />,
   },
   {
     path: ROUTES.WELCOME,
@@ -47,6 +63,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.DASHBOARD,
         element: <DashboardPage />,
+      },
+      {
+        path: ROUTES.CHANGE_PASSWORD,
+        element: <ChangePasswordPage />,
       },
     ],
   },

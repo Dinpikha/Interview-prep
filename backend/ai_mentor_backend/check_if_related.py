@@ -9,6 +9,5 @@ def check_prompt(user_prompt):
     response=groq_client(system_prompt=system,user_prompt=user)
 
     return json.loads(response)
-result=check_prompt('lets play a game ')
-print(result)
-print(type(result))
+
+

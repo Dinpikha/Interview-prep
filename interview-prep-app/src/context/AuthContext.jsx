@@ -1,36 +1,83 @@
 import { createContext, useContext, useState, useCallback } from 'react'
+import { authApi } from '../lib/api'
+import {
+  getStoredUser,
+  getRefreshToken,
+  setSession,
+  clearSession,
+} from '../lib/tokenStorage'
 
 const AuthContext = createContext(null)
 
-const STORAGE_KEY = 'interview-prep-auth'
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      return stored ? JSON.parse(stored) : null
-    } catch {
-      return null
-    }
-  })
+  const [user, setUser] = useState(() => getStoredUser())
+  const [authLoading, setAuthLoading] = useState(false)
 
-  // Demo login: accepts any non-empty username/password.
-  // Swap the body of this function for a real API call when you have a backend.
-  const login = useCallback((username) => {
-    const userData = { username }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData))
-    setUser(userData)
+  const applySession = useCallback((data) => {
+    setSession(data)
+    setUser(data.user)
+    return data.user
+  }, [])
+
+  const login = useCallback(
+    async (identifier, password) => {
+      setAuthLoading(true)
+      try {
+        const data = await authApi.login(identifier, password)
+        return applySession(data)
+      } finally {
+        setAuthLoading(false)
+      }
+    },
+    [applySession],
+  )
+
+  const signup = useCallback(
+    async (username, email, password) => {
+      setAuthLoading(true)
+      try {
+        const data = await authApi.signup(username, email, password)
+        return applySession(data)
+      } finally {
+        setAuthLoading(false)
+      }
+    },
+    [applySession],
+  )
+
+  const loginWithGithub = useCallback(
+    async (code) => {
+      setAuthLoading(true)
+      try {
+        const data = await authApi.githubLogin(code)
+        return applySession(data)
+      } finally {
+        setAuthLoading(false)
+      }
+    },
+    [applySession],
+  )
+
+  const changePassword = useCallback((currentPassword, newPassword) => {
+    return authApi.changePassword(currentPassword, newPassword)
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY)
+    const refreshToken = getRefreshToken()
+    // fire-and-forget: revoke server-side, but don't block the UI on it
+    if (refreshToken) authApi.logout(refreshToken).catch(() => {})
+    clearSession()
     setUser(null)
   }, [])
 
   const value = {
     user,
     isAuthenticated: !!user,
+    authLoading,
     login,
+    signup,
+    loginWithGithub,
+    changePassword,
     logout,
   }
 

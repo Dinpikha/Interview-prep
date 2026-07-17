@@ -4,7 +4,7 @@ from fastapi import HTTPException
 def create_session_(user_id:str):
     try:
         session_id = create_session(user_id)
-        print(session_id)
+        
         return {
             "success": True,
             "session_id": session_id

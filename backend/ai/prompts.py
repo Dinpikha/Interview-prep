@@ -50,10 +50,6 @@ def score_calculator_prompt(markdown: dict, links: dict, analysis_json: str):
         },
     }
 
-    # NOTE: if your provider supports structured outputs / forced JSON schema
-    # (OpenAI response_format=json_schema, Anthropic tool-use input_schema,
-    # Gemini response_schema), prefer that over embedding JSON_SCHEMA here —
-    # it removes ~120 tokens/call and guarantees valid, schema-conformant JSON.
     system_prompt = f"""You are an expert ATS resume reviewer. Today's date: {current_date}.
 
 Output raw JSON only — no markdown, no code fences, no commentary. Response must start with {{ and end with }}.

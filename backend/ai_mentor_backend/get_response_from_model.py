@@ -9,6 +9,3 @@ def model_reply(user_prompt,previous_summary):
 
     return response
 
-
-print(model_reply('hi i am dipika ','there is no summary '))
-print(type(model_reply('heyy','')))

@@ -24,4 +24,3 @@ def return_saved_summary(user_id:str):
             detail="Unable to retrieve your profile summary."
         )
     
-print(return_saved_summary("7bf7a9ea-ac7c-4253-8304-6c768c92082c"))

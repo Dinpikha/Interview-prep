@@ -9,6 +9,7 @@ export {
   CardTitle,
 } from './Card'
 export { default as EmptyState } from './EmptyState'
+export { default as GithubIcon } from './GithubIcon'
 export { default as Input } from './Input'
 export { default as PageHeader } from './PageHeader'
 export { default as ProgressBar } from './ProgressBar'

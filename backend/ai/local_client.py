@@ -1,7 +1,6 @@
 import requests
-import json 
-LM_STUDIO_URL ="http://127.0.0.1:1234/v1/chat/completions"
-
+import os 
+LM_STUDIO_URL =os.getenv("lm_url")
 def local_client(
     user_prompt: str,
     system_prompt: str,

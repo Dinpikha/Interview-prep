@@ -103,7 +103,7 @@ def ai_mentor_response_(user_id:str
             update_summary(new_summary, user_id=user_id)
 
     except Exception as e:
-        # Don't fail the chat because memory update failed.
+        
         print("Summary update failed:", e)
 
     return {
