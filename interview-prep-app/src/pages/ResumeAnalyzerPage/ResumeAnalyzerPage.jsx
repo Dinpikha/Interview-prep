@@ -25,7 +25,7 @@ export default function ResumeAnalyzerPage() {
   const [jobDescription, setJobDescription] = useState('')
   const [hasResults, setHasResults] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
   const [role, setRole] = useState('')
   const [customRole, setCustomRole] = useState('')
   const [analysis, setAnalysis] = useState(null)
