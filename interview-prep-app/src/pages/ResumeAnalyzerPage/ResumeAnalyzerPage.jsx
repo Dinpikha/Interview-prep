@@ -46,7 +46,7 @@ export default function ResumeAnalyzerPage() {
     console.log(key, value);
 }
 
-      const response = await fetch(`${VITE_API_BASE_URL}/resume_analyzer`, {
+      const response = await fetch(`${API_BASE_URL}/resume_analyzer`, {
         method: 'POST',
         body: formData,
       })

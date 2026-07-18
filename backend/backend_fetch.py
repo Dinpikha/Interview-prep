@@ -77,9 +77,9 @@ class DeleteUserRequest(BaseModel):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-    "http://localhost:5173",
-    "https://interviewprep-theta-gilt.vercel.app",
-],
+        "http://localhost:5173",
+    ],
+    allow_origin_regex=r"https://interviewprep.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
