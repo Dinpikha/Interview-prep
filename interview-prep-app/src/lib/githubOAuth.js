@@ -5,7 +5,7 @@ const REDIRECT_URI =
 export function buildGithubAuthUrl() {
   if (!GITHUB_CLIENT_ID) {
     console.error(
-      'VITE_GITHUB_CLIENT_ID is not set — add it to interview-prep-app/.env (see .env.example)',
+      
     )
   }
 
