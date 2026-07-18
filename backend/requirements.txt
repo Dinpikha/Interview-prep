@@ -25,6 +25,6 @@ pydantic==2.13.4
 pymupdf==1.28.0
 pymupdf4llm==1.28.0
 
-transformers
-torch
-datasets
+# transformers
+# torch
+# datasets
