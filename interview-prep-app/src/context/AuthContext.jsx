@@ -24,6 +24,9 @@ export function AuthProvider({ children }) {
       setAuthLoading(true)
       try {
         const data = await authApi.login(identifier, password)
+        
+        console.log("LOGIN RESPONSE:", data)
+        
         return applySession(data)
       } finally {
         setAuthLoading(false)
