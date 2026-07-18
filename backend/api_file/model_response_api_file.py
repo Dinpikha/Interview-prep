@@ -2,7 +2,7 @@
 from backend.ai_mentor_backend.connecting_files_logic import ai_mentor
 from Database.db import enter_data,get_prev_summary,update_summary,insert_summary
 from fastapi import HTTPException
-from backend.ai_mentor_backend.get_embeddings import get_embeddings
+# from backend.ai_mentor_backend.get_embeddings import get_embeddings
 from backend.ai_mentor_backend.generate_new_summary import generate_new_summary
 
 
@@ -22,15 +22,15 @@ def ai_mentor_response_(user_id:str
             detail="Unable to retrieve your profile information."
         )
 
-    # Generate user embedding
-    try:
-        user_embedding = get_embeddings(user_prompt)
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=503,
-            detail="Embedding service is currently unavailable."
-        )
+    # # Generate user embedding
+    # try:
+    #     user_embedding = get_embeddings(user_prompt)
+    # except Exception as e:
+    #     print(e)
+    #     raise HTTPException(
+    #         status_code=503,
+    #         detail="Embedding service is currently unavailable."
+    #     )
 
     # Save user message
     try:
@@ -38,7 +38,7 @@ def ai_mentor_response_(user_id:str
             session_id,
             role,
             user_prompt,
-            user_embedding
+            None
         )
     except Exception as e:
         print(e)
@@ -58,15 +58,15 @@ def ai_mentor_response_(user_id:str
             detail="MentorAI is currently unavailable. Please try again later."
         )
 
-    # Generate assistant embedding
-    try:
-        assistant_embedding = get_embeddings(response)
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=503,
-            detail="Embedding service is currently unavailable."
-        )
+    # # Generate assistant embedding
+    # try:
+    #     assistant_embedding = get_embeddings(response)
+    # except Exception as e:
+    #     print(e)
+    #     raise HTTPException(
+    #         status_code=503,
+    #         detail="Embedding service is currently unavailable."
+    #     )
 
     # Save assistant response
     try:
@@ -74,7 +74,7 @@ def ai_mentor_response_(user_id:str
             session_id,
             "assistant",
             response,
-            assistant_embedding
+            None
         )
     except Exception as e:
         print(e)
