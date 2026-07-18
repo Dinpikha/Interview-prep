@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { mentorMessages } from '../data/mentorMessages'
 import { apiRequest } from '../lib/api'
-import { getUserId } from '../lib/tokenStorage'
+import { useAuth } from './AuthContext'
 
 const MentorChatContext = createContext(null)
 
@@ -16,7 +16,7 @@ function getTimestamp() {
 async function createSession(user_id) {
   const data = await apiRequest('/create_session', {
     method: 'POST',
-    body: JSON.stringify({ user_id: user_id }),
+    body: JSON.stringify({ user_id }),
   })
   if (data?.success && data.session_id) {
     localStorage.setItem('session_id', data.session_id)
@@ -26,27 +26,48 @@ async function createSession(user_id) {
 }
 
 export function MentorChatProvider({ children }) {
+  const { user } = useAuth()
+  const userId = user?.user_id ?? null
+
   const [messages, setMessages] = useState(mentorMessages)
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [webSearchEnabled, setWebSearchEnabled] = useState(false)
-  const [sessionId, setSessionId] = useState(() => localStorage.getItem('session_id'))
-  const sessionCreated = useRef(false)
+  const [sessionId, setSessionId] = useState(null)
 
+  // Which user_id the current sessionId belongs to. Lets us tell "nobody
+  // was logged in yet" and "a different user just logged in" apart from
+  // "same user, just re-rendered" — only the first two should mint a
+  // fresh session.
+  const sessionOwnerId = useRef(null)
 
   useEffect(() => {
-    if (sessionCreated.current || sessionId) return
-    sessionCreated.current = true
-    const user_id = getUserId()
-    
-    createSession(user_id)
+    // Not logged in — nothing to do, and drop any leftover session that
+    // might have been created before login (it has no real owner).
+    if (!userId) {
+      if (sessionOwnerId.current !== null) {
+        sessionOwnerId.current = null
+        setSessionId(null)
+        localStorage.removeItem('session_id')
+      }
+      return
+    }
+
+    // Already have a valid session tied to this exact user — reuse it.
+    if (sessionOwnerId.current === userId) return
+
+    sessionOwnerId.current = userId
+    createSession(userId)
       .then((id) => id && setSessionId(id))
       .catch((err) => console.error(err))
-  }, [sessionId])
+  }, [userId])
 
   const sendMessage = useCallback(
     async (content) => {
-      const user_id = getUserId()
+      if (!userId) {
+        console.error('sendMessage called with no signed-in user')
+        return
+      }
 
       const userMessage = {
         id: String(Date.now()),
@@ -65,7 +86,7 @@ export function MentorChatProvider({ children }) {
           body: JSON.stringify({
             user_prompt: content,
             web_search: webSearchEnabled,
-            user_id: user_id,
+            user_id: userId,
             session_id: sessionId,
             role: 'user',
           }),
@@ -86,24 +107,28 @@ export function MentorChatProvider({ children }) {
         setIsTyping(false)
       }
     },
-    [sessionId, webSearchEnabled],
+    [userId, sessionId, webSearchEnabled],
   )
 
   // The ONLY thing that should ever clear the conversation — wired to an
   // explicit "New Chat" button, never to navigation/unmount.
   const startNewChat = useCallback(async () => {
-    const user_id = getUserId()
+    if (!userId) {
+      console.error('startNewChat called with no signed-in user')
+      return
+    }
+
     setMessages(mentorMessages)
     setInput('')
     setIsTyping(false)
 
     try {
-      const id = await createSession(user_id)
+      const id = await createSession(userId)
       if (id) setSessionId(id)
     } catch (err) {
       console.error(err)
     }
-  }, [])
+  }, [userId])
 
   const value = {
     messages,

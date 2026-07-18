@@ -19,6 +19,10 @@ export function getStoredUser() {
   }
 }
 
+export function getUserId() {
+  return getStoredUser()?.user_id ?? null
+}
+
 export function setSession({ access_token, refresh_token, user }) {
   if (access_token) localStorage.setItem(ACCESS_KEY, access_token)
   if (refresh_token) localStorage.setItem(REFRESH_KEY, refresh_token)
@@ -29,9 +33,4 @@ export function clearSession() {
   localStorage.removeItem(ACCESS_KEY)
   localStorage.removeItem(REFRESH_KEY)
   localStorage.removeItem(USER_KEY)
-}
-
-export function getUserId() {
-    const user = getStoredUser();
-    return user?.user_id ?? user?.id ?? null;
 }

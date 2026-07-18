@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { CheckCircle2, Eye, EyeOff, KeyRound } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -20,7 +20,41 @@ export default function SetPasswordPage() {
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
 
-  const goNext = () => navigate(ROUTES.WELCOME, { replace: true })
+  // Where to land after a successful set: onboarding always continues into
+  // the app; if you got here deliberately from Change Password, go back
+  // there so you can see the change actually took.
+  const goNext = () => navigate(isOnboarding ? ROUTES.WELCOME : ROUTES.CHANGE_PASSWORD, { replace: true })
+
+  // Already has a password (e.g. you already finished this, or navigated
+  // back here after the fact) — nothing to do, don't show the form again.
+  if (user?.has_password && !done) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-background px-4 page-transition">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="w-full max-w-sm"
+        >
+          <div className="rounded-xl border border-border bg-card p-6 text-center shadow-sm">
+            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success/10 text-success">
+              <CheckCircle2 className="h-6 w-6" />
+            </span>
+            <p className="text-sm text-foreground">
+              This account already has a password set.
+            </p>
+            <Link
+              to={ROUTES.CHANGE_PASSWORD}
+              className="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary-hover active:scale-[0.98]"
+            >
+              <KeyRound className="h-4 w-4" />
+              Change password instead
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -70,7 +104,7 @@ export default function SetPasswordPage() {
                   You signed up with GitHub — add a password so you can also log in without it.
                 </span>
               ) : (
-                'Add a password to this account.'
+                'You signed in with GitHub only — add a password below to enable password login too.'
               )}
             </p>
           </div>
