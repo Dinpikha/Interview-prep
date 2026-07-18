@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { mentorMessages } from '../data/mentorMessages'
 import { apiRequest } from '../lib/api'
+import { getUserId } from '../lib/tokenStorage'
 
 const MentorChatContext = createContext(null)
 
@@ -36,8 +37,8 @@ export function MentorChatProvider({ children }) {
   useEffect(() => {
     if (sessionCreated.current || sessionId) return
     sessionCreated.current = true
-
-    const user_id = localStorage.getItem('user_id')
+    const user_id = getUserId()
+    
     createSession(user_id)
       .then((id) => id && setSessionId(id))
       .catch((err) => console.error(err))
@@ -45,7 +46,7 @@ export function MentorChatProvider({ children }) {
 
   const sendMessage = useCallback(
     async (content) => {
-      const user_id = localStorage.getItem('user_id')
+      const user_id = getUserId()
 
       const userMessage = {
         id: String(Date.now()),
@@ -91,7 +92,7 @@ export function MentorChatProvider({ children }) {
   // The ONLY thing that should ever clear the conversation — wired to an
   // explicit "New Chat" button, never to navigation/unmount.
   const startNewChat = useCallback(async () => {
-    const user_id = localStorage.getItem('user_id')
+    const user_id = getUserId()
     setMessages(mentorMessages)
     setInput('')
     setIsTyping(false)

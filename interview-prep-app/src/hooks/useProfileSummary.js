@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getProfileSummary } from '../lib/api'
-
+import { getUserId } from '../lib/tokenStorage'
 
 export function useProfileSummary() {
   const [profile, setProfile] = useState(null)
@@ -11,7 +11,7 @@ export function useProfileSummary() {
     let cancelled = false
 
     async function fetchSummary() {
-      const userId = localStorage.getItem('user_id')
+      const userId = getUserId()
 
       if (!userId) {
         if (!cancelled) {

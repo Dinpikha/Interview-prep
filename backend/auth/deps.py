@@ -27,8 +27,7 @@ async def get_current_user(authorization: str | None = Header(default=None)) -> 
 
 
 async def get_optional_user(authorization: str | None = Header(default=None)) -> dict | None:
-    """Same as get_current_user but returns None instead of raising —
-    useful for routes that behave differently for logged-in vs anonymous users."""
+
     if not authorization or not authorization.lower().startswith("bearer "):
         return None
     try:

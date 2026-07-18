@@ -67,6 +67,8 @@ class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
 
+class SetPasswordRequest(BaseModel):
+    new_password:str 
 
 class DeleteUserRequest(BaseModel):
     username: str
@@ -123,6 +125,12 @@ def change_password_route(
 ):
     return auth.change_password(user["user_id"], request.current_password, request.new_password)
 
+
+@app.post("/auth/set-password")
+def set_password_route(
+    request: SetPasswordRequest, user: dict = Depends(get_current_user)
+):
+    return auth.set_initial_password(user["user_id"],request.new_password)
 
 @app.get("/auth/me")
 def me_route(user: dict = Depends(get_current_user)):

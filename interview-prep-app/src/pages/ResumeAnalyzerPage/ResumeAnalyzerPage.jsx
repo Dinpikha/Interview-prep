@@ -3,6 +3,7 @@ import { PageHeader, Select, Input } from '../../components/ui'
 import ResumeUpload from './ResumeUpload'
 import JobDescription from './JobDescription'
 import AnalysisResults from './AnalysisResults'
+import { getUserId } from '../../lib/tokenStorage'
 
 const ROLE_OPTIONS = [
   'Software Engineer',
@@ -35,12 +36,16 @@ export default function ResumeAnalyzerPage() {
     setIsAnalyzing(true)
     try {
       const formData = new FormData()
-      const user_id = localStorage.getItem("user_id");
+      const user_id = getUserId();
       formData.append('pdf', selectedFile)
       formData.append("user_id", user_id)
       formData.append('role', effectiveRole)
       formData.append('job_description', jobDescription)
-      
+      console.log('hey we are here')
+      for (const [key, value] of formData.entries()) {
+    console.log(key, value);
+}
+
       const response = await fetch('http://127.0.0.1:8000/resume_analyzer', {
         method: 'POST',
         body: formData,

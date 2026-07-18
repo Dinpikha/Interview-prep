@@ -6,7 +6,6 @@ export const mentorMessages = [
 
             I'm here to help you improve your interview performance based on your progress. You can:
 
-            • Paste your dashboard summary for personalized feedback.
             • Ask for resume or interview advice.
             • Discuss your strengths and weaknesses.
             • Get suggestions on what to practice next.

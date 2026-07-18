@@ -1,15 +1,12 @@
-----------------------------------------------------
--- USERS
-----------------------------------------------------
+
 create table users (
     user_id uuid primary key default gen_random_uuid(),
     username text not null unique,
     created_at timestamptz default now()
 );
 
-----------------------------------------------------
--- SESSIONS
-----------------------------------------------------
+
+
 create table sessions (
     session_id uuid primary key default gen_random_uuid(),
     user_id uuid references users(user_id) on delete cascade,
@@ -17,9 +14,6 @@ create table sessions (
     ended_at timestamptz
 );
 
-----------------------------------------------------
--- MESSAGES
-----------------------------------------------------
 create extension if not exists vector;
 
 create table messages (
@@ -31,9 +25,6 @@ create table messages (
     created_at timestamptz default now()
 );
 
-----------------------------------------------------
--- RESUME
-----------------------------------------------------
 create table resume (
     user_id uuid primary key references users(user_id) on delete cascade,
     resume_text text not null,
@@ -41,9 +32,7 @@ create table resume (
     updated_at timestamptz default now()
 );
 
-----------------------------------------------------
--- METRICS
-----------------------------------------------------
+
 create table metrics (
     metric_id uuid primary key default gen_random_uuid(),
     user_id uuid references users(user_id) on delete cascade,

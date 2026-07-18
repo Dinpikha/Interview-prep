@@ -5,6 +5,7 @@ export const ROUTES = {
   RESET_PASSWORD: '/reset-password',
   GITHUB_CALLBACK: '/auth/github/callback',
   CHANGE_PASSWORD: '/change-password',
+  SET_PASSWORD: '/set-password',
   WELCOME: '/welcome',
   HOME: '/home',
   MOCK_INTERVIEW: '/mock-interview',

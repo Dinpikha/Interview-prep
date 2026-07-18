@@ -12,6 +12,7 @@ import {
   MockInterviewPage,
   ResetPasswordPage,
   ResumeAnalyzerPage,
+  SetPasswordPage,
   WelcomePage,
 } from '../pages'
 import AppShell from './AppShell'
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.GITHUB_CALLBACK,
     element: <GithubCallbackPage />,
+  },
+  {
+    path: ROUTES.SET_PASSWORD,
+    element: <SetPasswordPage />,
   },
   {
     path: ROUTES.WELCOME,

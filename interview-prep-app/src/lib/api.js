@@ -37,11 +37,7 @@ async function doRefresh() {
   }
 }
 
-/**
- * Core request helper. Attaches the access token automatically, and — on a
- * single 401 — tries one silent refresh + retry before giving up. Callers
- * don't need to think about tokens at all beyond `login`/`logout`.
- */
+
 export async function apiRequest(path, options = {}, { auth = true, _retried = false } = {}) {
   const headers = { 'Content-Type': 'application/json', ...options.headers }
 
@@ -73,7 +69,7 @@ export async function apiRequest(path, options = {}, { auth = true, _retried = f
   try {
     data = await response.json()
   } catch {
-    // no JSON body — fine for some 204s etc.
+  
   }
 
   if (!response.ok) {
@@ -141,4 +137,9 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ current_password, new_password }),
     }),
+  setPassword: (new_password) => 
+    apiRequest('/auth/set-password', {
+      method: 'POST',
+      body: JSON.stringify({ new_password }),
+    })
 }

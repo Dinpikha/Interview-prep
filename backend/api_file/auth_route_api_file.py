@@ -1,5 +1,5 @@
 """
-All auth business logic. Endpoints in backend_fetch.py just call into here.
+
 
 Flows implemented:
   - signup_local        username + email + password
@@ -65,6 +65,7 @@ def _issue_session(user: dict) -> dict:
             "email": user.get("email"),
             "avatar_url": user.get("avatar_url"),
             "auth_provider": user.get("auth_provider", "local"),
+            "has_password":bool(user.get("password_hash")),
         },
     }
 
@@ -90,7 +91,6 @@ def signup_local(username: str, email: str, password: str) -> dict:
 
 # ------------------------------------------------------------------- login
 def login_local(identifier: str, password: str) -> dict:
-    """`identifier` can be a username or an email."""
     identifier = identifier.strip()
     user = get_user_by_username(identifier) or get_user_by_email(identifier.lower())
 
@@ -124,12 +124,10 @@ async def github_oauth_login(code: str) -> dict:
         user = get_user_by_id(existing_link["user_id"])
         return _issue_session(user)
 
-    # No link yet — if the GitHub email matches an existing local account,
-    # link GitHub onto it instead of creating a duplicate user.
     user = get_user_by_email(profile["email"]) if profile.get("email") else None
 
     if not user:
-        # Ensure username uniqueness (GitHub usernames can collide with local ones)
+        
         candidate = profile["username"] or f"github_{profile['provider_user_id']}"
         base_candidate = candidate
         suffix = 1
@@ -174,8 +172,6 @@ def logout(raw_refresh_token: str) -> dict:
 def forgot_password(email: str) -> dict:
     user = get_user_by_email(email.strip().lower())
 
-    # Always return the same response whether or not the account exists —
-    # this avoids leaking which emails are registered.
     generic_response = {
         "success": True,
         "message": "If that email is registered, a reset link has been sent.",
@@ -209,7 +205,7 @@ def reset_password(raw_token: str, new_password: str) -> dict:
 
     update_password(stored["user_id"], hash_password(new_password))
     mark_reset_token_used(token_hash)
-    revoke_all_refresh_tokens(stored["user_id"])  # log the user out everywhere
+    revoke_all_refresh_tokens(stored["user_id"]) 
 
     return {"success": True, "message": "Password updated — please log in again"}
 
@@ -223,10 +219,36 @@ def change_password(user_id: str, current_password: str, new_password: str) -> d
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    if not user.get("password_hash"):
+        raise HTTPException(
+            status_code=400,
+            detail="This account has no password yet - use 'set password ' instead of 'change password' "
+
+        )
+    
     if not verify_password(current_password, user.get("password_hash")):
         raise HTTPException(status_code=401, detail="Current password is incorrect")
 
     update_password(user_id, hash_password(new_password))
-    revoke_all_refresh_tokens(user_id)  # force re-login on other devices
+    revoke_all_refresh_tokens(user_id)  
 
     return {"success": True, "message": "Password changed successfully"}
+
+def set_initial_password(user_id:str , new_password:str ) -> dict:
+    
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+
+    user = get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.get("password_hash"):
+        raise HTTPException(
+            status_code=400,
+            detail="Password already exists. Use change password instead."
+
+        )
+    update_password(user_id,hash_password(new_password))
+
+    return {"success":True , "message": "Password set — you can now log in with it anytime"}

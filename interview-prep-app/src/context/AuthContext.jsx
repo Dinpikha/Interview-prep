@@ -62,9 +62,22 @@ export function AuthProvider({ children }) {
     return authApi.changePassword(currentPassword, newPassword)
   }, [])
 
+  const setPassword = useCallback(
+    async (newPassword) => {
+      const result = await authApi.setPassword(newPassword)
+      setUser((prev) => {
+        if (!prev) return prev 
+        const updated = { ...prev, has_password: true }
+        setSession({ user:update })
+        return updated
+      })
+      return result
+    },[],
+  )
+
   const logout = useCallback(() => {
     const refreshToken = getRefreshToken()
-    // fire-and-forget: revoke server-side, but don't block the UI on it
+
     if (refreshToken) authApi.logout(refreshToken).catch(() => {})
     clearSession()
     setUser(null)
@@ -78,6 +91,7 @@ export function AuthProvider({ children }) {
     signup,
     loginWithGithub,
     changePassword,
+    setPassword,
     logout,
   }
 

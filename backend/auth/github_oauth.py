@@ -57,7 +57,6 @@ async def fetch_github_profile(github_access_token: str) -> dict:
 
         email = profile.get("email")
         if not email:
-            # Private-by-default emails need this extra call.
             emails_resp = await client.get(
                 "https://api.github.com/user/emails", headers=headers
             )

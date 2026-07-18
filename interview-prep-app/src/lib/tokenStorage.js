@@ -30,3 +30,8 @@ export function clearSession() {
   localStorage.removeItem(REFRESH_KEY)
   localStorage.removeItem(USER_KEY)
 }
+
+export function getUserId() {
+    const user = getStoredUser();
+    return user?.user_id ?? null;
+}

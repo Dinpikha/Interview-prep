@@ -33,8 +33,15 @@ export default function GithubCallbackPage() {
       }
 
       try {
-        await loginWithGithub(code)
-        navigate(ROUTES.WELCOME, { replace: true })
+        const loggedInUser = await loginWithGithub(code)
+        if (!loggedInUser?.has_password) {
+          // First time this GitHub account has ever logged in here — give
+          // them the option to set a password so they're not locked into
+          // GitHub-only login forever.
+          navigate(ROUTES.SET_PASSWORD, { replace: true, state: { onboarding: true } })
+        } else {
+          navigate(ROUTES.WELCOME, { replace: true })
+        }
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'GitHub sign-in failed.')
       }
