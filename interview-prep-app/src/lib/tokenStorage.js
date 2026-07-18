@@ -33,5 +33,5 @@ export function clearSession() {
 
 export function getUserId() {
     const user = getStoredUser();
-    return user?.user_id ?? null;
+    return user?.user_id ?? user?.id ?? null;
 }

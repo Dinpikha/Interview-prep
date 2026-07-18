@@ -15,7 +15,7 @@ const tabVariants = {
 }
 
 export default function LoginPage() {
-  const [mode, setMode] = useState('login') // 'login' | 'signup'
+  const [mode, setMode] = useState('login')
   const [direction, setDirection] = useState(1)
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')

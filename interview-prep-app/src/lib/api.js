@@ -73,7 +73,7 @@ export async function apiRequest(path, options = {}, { auth = true, _retried = f
   }
 
   if (!response.ok) {
-    const message = data?.detail || data?.message || `Something went wrong (${response.status}).`
+    const message = data?.detail || data?.message || `Something went wrong (${response.message}).`
     emitToast({ variant: 'error', title: 'Request failed', message })
     throw new ApiError(message, response.status)
   }
