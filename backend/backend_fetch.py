@@ -148,12 +148,21 @@ def get_model_response(request: PromptRequest):
 
 
 @app.post("/resume_analyzer")
-async def get_extracted_text(pdf: UploadFile = File(...), user_id: str = Form(...)):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
-        contents = await pdf.read()
-        temp_file.write(contents)
-        temp_path = temp_file.name
-    response = resume_analyzer_(user_id=user_id, temp_path=temp_path)
+async def get_extracted_text(
+    pdf: UploadFile | None = File(None),
+    user_id: str = Form(...),
+    job_description: str | None = Form(None),
+    resume_text: str | None = Form(None),
+    role: str | None = Form(None),
+):  
+    temp_path=None
+    if pdf:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+            contents = await pdf.read()
+            temp_file.write(contents)
+            temp_path = temp_file.name
+        
+    response = resume_analyzer_(user_id=user_id, temp_path=temp_path,job_description=job_description,resume_text=resume_text,role=role)
     return response
 
 

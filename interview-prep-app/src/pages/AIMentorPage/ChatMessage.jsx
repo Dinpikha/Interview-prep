@@ -1,9 +1,36 @@
 import { Bot, User } from 'lucide-react'
 import { cn } from '../../lib/cn'
+import { useEffect, useState } from 'react'
 
-export default function ChatMessage({ message }) {
+export default function ChatMessage({ message ,skipAnimation}) {
   const isUser = message.role === 'user'
+  // we need to print message content 
+  
+  const [count,setCount] = useState(0)
+  const [displayedText, setDisplayedText] = useState("")
+  const [messages, setMessages] = useState([])
+  useEffect(  ()=>{
+    setDisplayedText(
+    message.content.slice(0,count)
+    
+  ) 
+  if (count < message.content.length){
+ const timer =  setTimeout(() => {
+    
+      setCount(prev => prev+1)
+    
+    
+  }, 10)
+  return () =>clearTimeout(timer)
+  }
+},[count,message.content])
 
+useEffect(()=>{
+setCount(0)
+setDisplayedText('')
+},[message.content])
+ 
+  
   return (
     <div className={cn('flex gap-3', isUser && 'flex-row-reverse')}>
       <span
@@ -22,10 +49,13 @@ export default function ChatMessage({ message }) {
             isUser
               ? 'bg-primary text-primary-foreground'
               : 'border border-border bg-card text-foreground',
-          )}
-        >
-          {message.content}
-        </div>
+          )}>
+            {isUser ? message.content : displayedText}
+          </div>
+      
+          
+          
+        
         <p className="text-xs text-muted-foreground">{message.timestamp}</p>
       </div>
     </div>

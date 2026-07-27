@@ -41,6 +41,8 @@ export default function ResumeAnalyzerPage() {
       formData.append("user_id", user_id)
       formData.append('role', effectiveRole)
       formData.append('job_description', jobDescription)
+      formData.append('resume_text', jobDescription)
+      
       console.log('hey we are here')
       for (const [key, value] of formData.entries()) {
     console.log(key, value);

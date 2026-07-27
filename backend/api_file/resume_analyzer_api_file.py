@@ -11,12 +11,15 @@ from backend.ai_mentor_backend.generate_new_summary import generate_new_summary
 from backend.resume_analyzer_backend.scoring.score_calculator import analyze_resume
 from backend.resume_analyzer_backend.parser.extract_resume import get_text_and_links
 
-def resume_analyzer_(user_id: str, temp_path: str):
+def resume_analyzer_(user_id: str, temp_path: str , resume_text=None , job_description = None,role =None):
     try:
         prev_summary = get_prev_summary(user_id)
 
-        response = analyze_resume(temp_path)
-        resume_content=get_text_and_links(temp_path)
+        response = analyze_resume(temp_path,resume_text,job_description,role)
+        if temp_path!=None:
+            resume_content=get_text_and_links(temp_path)
+        if resume_text : 
+            resume_content= resume_text
         user_context = {
             "summary": prev_summary,
             "conversation": {
@@ -51,5 +54,6 @@ def resume_analyzer_(user_id: str, temp_path: str):
         )
 
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if temp_path:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)

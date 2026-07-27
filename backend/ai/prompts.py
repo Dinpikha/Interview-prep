@@ -4,7 +4,7 @@ from datetime import datetime
 current_date = datetime.now().strftime("%d %B %Y")
 
 
-def score_calculator_prompt(markdown: dict, links: dict, analysis_json: str):
+def score_calculator_prompt(markdown: dict, links: dict, analysis_json: str,resume_text:str,job_description:str,role:str):
     JSON_SCHEMA = {
         "overall_score": 0,
         "summary": {"headline": "", "overview": ""},
@@ -55,7 +55,7 @@ def score_calculator_prompt(markdown: dict, links: dict, analysis_json: str):
 Output raw JSON only — no markdown, no code fences, no commentary. Response must start with {{ and end with }}.
 
 Use the Structured Analysis as ground truth; use the Resume Markdown only for supporting context. Never invent information that isn't present in the input. Match the schema exactly.
-
+,The extracted links, structured analysis , resume_text if manually written resume - ats checks are not available for this , job_description
 Resume Markdown:
 {markdown}
 
@@ -64,6 +64,15 @@ Extracted Links:
 
 Structured Analysis:
 {analysis_json}
+
+resume_text:
+{resume_text}
+
+job_description:
+{job_description}
+
+role:
+{role}
 
 Schema:
 {json.dumps(JSON_SCHEMA, indent=2)}

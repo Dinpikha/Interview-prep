@@ -30,20 +30,17 @@ export function MentorChatProvider({ children }) {
   const userId = user?.user_id ?? null
 
   const [messages, setMessages] = useState(mentorMessages)
+  const [currentlyAnimatingId, setCurrentlyAnimatingId] = useState(null)
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [webSearchEnabled, setWebSearchEnabled] = useState(false)
   const [sessionId, setSessionId] = useState(null)
 
-  // Which user_id the current sessionId belongs to. Lets us tell "nobody
-  // was logged in yet" and "a different user just logged in" apart from
-  // "same user, just re-rendered" — only the first two should mint a
-  // fresh session.
+  
   const sessionOwnerId = useRef(null)
 
   useEffect(() => {
-    // Not logged in — nothing to do, and drop any leftover session that
-    // might have been created before login (it has no real owner).
+   
     if (!userId) {
       if (sessionOwnerId.current !== null) {
         sessionOwnerId.current = null
@@ -53,7 +50,7 @@ export function MentorChatProvider({ children }) {
       return
     }
 
-    // Already have a valid session tied to this exact user — reuse it.
+    
     if (sessionOwnerId.current === userId) return
 
     sessionOwnerId.current = userId
@@ -110,8 +107,7 @@ export function MentorChatProvider({ children }) {
     [userId, sessionId, webSearchEnabled],
   )
 
-  // The ONLY thing that should ever clear the conversation — wired to an
-  // explicit "New Chat" button, never to navigation/unmount.
+
   const startNewChat = useCallback(async () => {
     if (!userId) {
       console.error('startNewChat called with no signed-in user')

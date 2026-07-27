@@ -26,3 +26,7 @@ def get_text_and_links(pdf_path):
 
     return dict(Links), markdown
 
+
+# import json
+# data=get_text_and_links(pdf_path='/home/Dipika/Downloads/Core_resume.pdf')
+# print(json.dumps(data, indent=4))

@@ -136,7 +136,15 @@ def check_quantified_impact(experience):
 def analyze_experience(link):
     links,markdown=get_text_and_links(link)
     sections=extract_resume_sections(markdown,links)
-    experience=sections['experience']
+    # print(sections)
+    experience = sections.get(
+    "experience",
+    {
+        "content": [],
+        "entries": []
+    }
+)
+        
     analysis_json={
         "experience_exists": check_experience_exists(experience),
         "experience_entries": count_experience_entries(experience),
@@ -146,5 +154,11 @@ def analyze_experience(link):
         "quantified_impact": check_quantified_impact(experience)
 
     }
+  
         
     return links,markdown,analysis_json
+
+# print(analyze_experience())
+data=analyze_experience(link='/home/Dipika/Downloads/Core_resume.pdf')
+import json
+print(json.dumps(data,indent=4))

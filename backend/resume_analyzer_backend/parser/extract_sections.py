@@ -4,6 +4,7 @@ from typing import Any
 
 SECTION_ALIASES = {
     "summary": "summary",
+    "profile":"summary",
     "professional summary": "summary",
     "objective": "summary",
 
@@ -20,6 +21,7 @@ SECTION_ALIASES = {
     "achievements": "achievements",
     "languages": "languages",
     "contact": "contact",
+    
 }
 
 
@@ -139,5 +141,4 @@ def extract_resume_sections(
         result["links"] = links
     
     return result
-
 

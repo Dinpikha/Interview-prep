@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ChatMessage from './ChatMessage'
+// useState
 
 export default function ChatMessages({ messages, isTyping }) {
   const bottomRef = useRef(null)
-
+  const [skipAnimation, setSkipAnimation] = useState(false)
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
@@ -11,7 +12,12 @@ export default function ChatMessages({ messages, isTyping }) {
   return (
     <div className="flex-1 space-y-6 overflow-y-auto px-1 py-4">
       {messages.map((message) => (
-        <ChatMessage key={message.id} message={message} />
+       <ChatMessage
+    message={message}
+    shouldAnimate={
+        message.id === currentlyAnimatingId
+    }
+/>
       ))}
 
       {isTyping && (
