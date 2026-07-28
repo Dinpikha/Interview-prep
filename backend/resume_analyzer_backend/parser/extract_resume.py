@@ -1,10 +1,11 @@
-from collections import defaultdict
+
 import fitz
 import pymupdf4llm
 import re
 
 def get_text_and_links(pdf_path):
-    Links = defaultdict(list)
+    
+    
 
     doc = fitz.open(pdf_path)
     markdown = pymupdf4llm.to_markdown(pdf_path)
@@ -14,19 +15,93 @@ def get_text_and_links(pdf_path):
     for line in markdown.splitlines():
         labels.extend(re.findall(r"<u>(.*?)</u>", line))
 
-    counter = 0
 
-    for page in doc:
-        for link in page.get_links():
-            if "uri" in link and counter < len(labels):
-                Links[labels[counter].lower()].append(link["uri"])
-                counter += 1
 
     doc.close()
 
-    return dict(Links), markdown
+    return  markdown
 
 
-# import json
-# data=get_text_and_links(pdf_path='/home/Dipika/Downloads/Core_resume.pdf')
-# print(json.dumps(data, indent=4))
+
+
+def markdown_to_json(markdown_text):
+    root = {}
+    stack = [(0, root)]
+
+    heading_pattern = re.compile(r"^(#+)\s*(.*)$")
+
+    for raw_line in markdown_text.splitlines():
+        line = raw_line.strip()
+
+        if not line:
+            continue
+
+        heading_match = heading_pattern.match(line)
+
+        if heading_match:
+            hashes = heading_match.group(1)
+            heading = heading_match.group(2)
+
+            level = len(hashes)
+
+            heading = heading.replace("**", "").strip()
+
+            
+            while stack[-1][0] >= level:
+                stack.pop()
+
+            parent_dict = stack[-1][1]
+
+            new_section = {
+                "content": []
+            }
+
+            parent_dict[heading] = new_section
+            stack.append((level, new_section))
+
+        else:
+            current_section = stack[-1][1]
+
+            if "content" not in current_section:
+                current_section["content"] = []
+
+            current_section["content"].append(line)
+
+   
+    clean_content(root)
+
+    return root
+
+def clean_content(obj):
+    if not isinstance(obj, dict):
+        return
+
+    for key, value in list(obj.items()):
+        if key == "content":
+            if isinstance(value, list):
+                cleaned_lines = [
+                    line for line in value
+                    if isinstance(line, str) and line.strip()
+                ]
+
+                if cleaned_lines:
+                    obj[key] = "\n".join(cleaned_lines)
+                else:
+                    del obj[key]
+
+        elif isinstance(value, dict):
+            clean_content(value)
+
+
+
+
+def return_santized_structured_json(pdf_path):
+    markdown=get_text_and_links(pdf_path)
+    phone_pattern = r"\+91[\s-]*[6-9]\d{9}"
+    email_pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
+    markdown = re.sub(phone_pattern, "<PHONE>", markdown)
+    markdown=re.sub(email_pattern,"<EMAIL>",markdown)
+    extracted_text=markdown_to_json(markdown)
+    return extracted_text
+
+# print(return_santized_structured_json('/home/Dipika/Downloads/Core_resume.pdf'))

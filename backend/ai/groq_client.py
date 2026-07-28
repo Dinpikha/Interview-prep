@@ -11,7 +11,7 @@ client = Groq(
 def groq_client(   
     system_prompt: str,
     user_prompt: str,
-    model_name='llama-3.3-70b-versatile',
+    model_name='openai/gpt-oss-20b',
     temperature: float = 0.5
     ):
     chat_completion = client.chat.completions.create(

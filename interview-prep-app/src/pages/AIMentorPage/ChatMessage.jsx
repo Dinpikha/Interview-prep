@@ -2,35 +2,41 @@ import { Bot, User } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { useEffect, useState } from 'react'
 
-export default function ChatMessage({ message ,skipAnimation}) {
+export default function ChatMessage({ message, shouldAnimate, onAnimationComplete }){
   const isUser = message.role === 'user'
-  // we need to print message content 
-  
-  const [count,setCount] = useState(0)
-  const [displayedText, setDisplayedText] = useState("")
-  const [messages, setMessages] = useState([])
-  useEffect(  ()=>{
-    setDisplayedText(
-    message.content.slice(0,count)
-    
-  ) 
-  if (count < message.content.length){
- const timer =  setTimeout(() => {
-    
-      setCount(prev => prev+1)
-    
-    
-  }, 10)
-  return () =>clearTimeout(timer)
-  }
-},[count,message.content])
 
-useEffect(()=>{
-setCount(0)
-setDisplayedText('')
-},[message.content])
- 
   
+  const [count,setCount] = useState(shouldAnimate ? 0:message.content.length)
+  const [displayedText, setDisplayedText] = useState(
+    shouldAnimate ? '' :message.content
+  )
+  
+  useEffect(() => {
+    if (shouldAnimate) {
+      setCount(0)
+      setDisplayedText('')
+    } else {
+      setCount(message.content.length)
+      setDisplayedText(message.content)
+    }
+   
+  }, [message.id])
+
+  useEffect(() => {
+    if (!shouldAnimate) return
+
+    setDisplayedText(message.content.slice(0, count))
+
+    if (count < message.content.length) {
+      const timer = setTimeout(() => {
+        setCount((prev) => prev + 1)
+      }, 10)
+      return () => clearTimeout(timer)
+    } else {
+      onAnimationComplete?.(message.id)
+    }
+  }, [count, message.content, shouldAnimate, message.id, onAnimationComplete])
+
   return (
     <div className={cn('flex gap-3', isUser && 'flex-row-reverse')}>
       <span
