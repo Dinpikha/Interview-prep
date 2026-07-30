@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import ChatMessage from './ChatMessage'
 
@@ -8,9 +8,9 @@ export default function ChatMessages({
   respondingMessageId,
   onPartialResponse,
   onResponseComplete,
+  onMessageAnimated,
 }) {
   const bottomRef = useRef(null)
-  const [animatedIds, setAnimatedIds] = useState(new Set())
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -18,27 +18,27 @@ export default function ChatMessages({
 
   const lastMessage = messages[messages.length - 1]
   const currentlyAnimatingId =
-    lastMessage && lastMessage.role !== 'user' && !animatedIds.has(lastMessage.id)
+    lastMessage && lastMessage.role !== 'user' && lastMessage.animate
       ? lastMessage.id
       : null
 
   const handleAnimationComplete = useCallback((id) => {
-    setAnimatedIds((prev) => new Set(prev).add(id))
+    onMessageAnimated?.(id)
     onResponseComplete?.(id)
-  }, [onResponseComplete])
+  }, [onMessageAnimated, onResponseComplete])
 
   return (
     <div className="flex-1 space-y-6 overflow-y-auto px-1 py-4">
       {messages.map((message) => (
-       <ChatMessage
-       key={message.id}
-    message={message}
-        shouldAnimate={
-        message.id === currentlyAnimatingId || message.id === respondingMessageId
-    }
-    onPartialChange={onPartialResponse}
-    onAnimationComplete={handleAnimationComplete}
-/>
+        <ChatMessage
+          key={message.id}
+          message={message}
+          shouldAnimate={
+            message.id === currentlyAnimatingId || (message.id === respondingMessageId && message.animate)
+          }
+          onPartialChange={onPartialResponse}
+          onAnimationComplete={handleAnimationComplete}
+        />
       ))}
 
       <AnimatePresence>

@@ -44,33 +44,35 @@ export default function QuickActions({ stats = [], loading = false }) {
   const statsById = Object.fromEntries((stats || []).map((stat) => [stat.id, stat.value]))
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-6 sm:grid-cols-2">
       {quickActions.map(({ title, description, icon: Icon, path, color, bg }, index) => (
         <motion.button
           key={title}
           type="button"
           onClick={() => navigate(path)}
-          className="text-left"
+          className="h-full text-left"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.04 }}
           whileHover={{ y: -2 }}
         >
-          <Card className="h-full transition-colors hover:border-primary/30">
-            <CardHeader>
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${bg} ${color}`}>
+          <Card className="flex h-full min-h-44 flex-col transition-colors hover:border-primary/30">
+            <CardHeader className="flex h-full flex-col gap-5 p-6 md:p-7">
+              <div className="flex items-start justify-between gap-4">
+                <span className={`flex h-12 w-12 items-center justify-center rounded-lg ${bg} ${color}`}>
                   <Icon className="h-5 w-5" />
                 </span>
-                {!loading && title === 'AI Mentor' && statsById.messages != null && (
-                  <span className="text-xs font-medium text-muted">{statsById.messages} messages</span>
+                {!loading && title === 'Mock Interview' && statsById.interviews != null && (
+                  <span className="text-xs font-medium text-muted">{statsById.interviews} completed</span>
                 )}
                 {!loading && title === 'Dashboard' && statsById.sessions != null && (
                   <span className="text-xs font-medium text-muted">{statsById.sessions} sessions</span>
                 )}
               </div>
-              <CardTitle>{title}</CardTitle>
-              <CardDescription>{description}</CardDescription>
+              <div className="space-y-2">
+                <CardTitle>{title}</CardTitle>
+                <CardDescription className="leading-relaxed">{description}</CardDescription>
+              </div>
             </CardHeader>
           </Card>
         </motion.button>

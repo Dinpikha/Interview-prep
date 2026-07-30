@@ -3,6 +3,7 @@ load_dotenv()
 import os
 from supabase import create_client, Client
 from datetime import datetime, timedelta, timezone
+import hashlib
 
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -82,6 +83,186 @@ def enter_data(session_id, role, content,embeddings):
         })
         .execute()
     )
+
+
+def _question_hash(question_text: str) -> str:
+    normalized = " ".join((question_text or "").lower().split())
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def get_resume_profile(user_id: str):
+    response = (
+        supabase
+        .table("resume")
+        .select("resume_text, summary, updated_at")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    return response.data[0] if response.data else None
+
+
+def get_previous_mock_questions(user_id: str, limit: int = 40):
+    response = (
+        supabase
+        .table("mock_interview_questions")
+        .select("question_text")
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return [item["question_text"] for item in (response.data or []) if item.get("question_text")]
+
+
+def create_mock_interview_session(user_id: str, interview_type: str, difficulty_level: str | None = None, role_focus: str | None = None, session_id: str | None = None):
+    response = (
+        supabase
+        .table("mock_interview_sessions")
+        .insert({
+            "user_id": user_id,
+            "session_id": session_id,
+            "interview_type": interview_type,
+            "difficulty_level": difficulty_level,
+            "role_focus": role_focus,
+            "status": "in_progress",
+        })
+        .execute()
+    )
+    return response.data[0]
+
+
+def insert_mock_questions(mock_interview_id: str, user_id: str, questions: list[dict]):
+    rows = []
+    for question in questions:
+        question_text = question.get("question_text", "")
+        rows.append({
+            "mock_interview_id": mock_interview_id,
+            "user_id": user_id,
+            "question_text": question_text,
+            "question_hash": _question_hash(question_text),
+            "question_type": question.get("question_type"),
+            "difficulty": question.get("difficulty"),
+            "related_skill": question.get("related_skill"),
+        })
+
+    if not rows:
+        return []
+
+    response = (
+        supabase
+        .table("mock_interview_questions")
+        .insert(rows)
+        .execute()
+    )
+    return response.data or []
+
+
+def get_mock_questions(mock_interview_id: str):
+    response = (
+        supabase
+        .table("mock_interview_questions")
+        .select("*")
+        .eq("mock_interview_id", mock_interview_id)
+        .order("created_at")
+        .execute()
+    )
+    return response.data or []
+
+
+def update_mock_answer(mock_question_id: str, answer_text: str, score: float, strengths: list[str], weaknesses: list[str], feedback: str):
+    return (
+        supabase
+        .table("mock_interview_questions")
+        .update({
+            "answer_text": answer_text,
+            "score": score,
+            "strengths": strengths,
+            "weaknesses": weaknesses,
+            "feedback": feedback,
+            "answer_status": "answered",
+            "answered_at": datetime.now(timezone.utc).isoformat(),
+        })
+        .eq("mock_question_id", mock_question_id)
+        .execute()
+    )
+
+
+def skip_mock_question(mock_question_id: str):
+    return (
+        supabase
+        .table("mock_interview_questions")
+        .update({
+            "answer_status": "skipped",
+            "answered_at": datetime.now(timezone.utc).isoformat(),
+        })
+        .eq("mock_question_id", mock_question_id)
+        .execute()
+    )
+
+
+def insert_metric(user_id: str, session_id: str | None, category: str, score: float):
+    return (
+        supabase
+        .table("metrics")
+        .insert({
+            "user_id": user_id,
+            "session_id": session_id,
+            "category": category,
+            "score": score,
+        })
+        .execute()
+    )
+
+
+def complete_mock_interview_session(mock_interview_id: str, overall_score: float):
+    response = (
+        supabase
+        .table("mock_interview_sessions")
+        .update({
+            "status": "completed",
+            "overall_score": overall_score,
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+        })
+        .eq("mock_interview_id", mock_interview_id)
+        .execute()
+    )
+    return response.data[0] if response.data else None
+
+
+def get_progress_context(user_id: str):
+    dashboard = get_dashboard_data(user_id)
+    resume_profile = get_resume_profile(user_id)
+
+    mock_response = (
+        supabase
+        .table("mock_interview_sessions")
+        .select("interview_type, difficulty_level, status, overall_score, started_at, completed_at")
+        .eq("user_id", user_id)
+        .order("started_at")
+        .execute()
+    )
+    mock_interviews = mock_response.data or []
+
+    metrics_response = (
+        supabase
+        .table("metrics")
+        .select("category, score, created_at")
+        .eq("user_id", user_id)
+        .order("created_at")
+        .execute()
+    )
+    metrics = metrics_response.data or []
+
+    return {
+        "dashboard": {
+            "stats": dashboard.get("stats", []),
+            "performanceAreas": dashboard.get("performanceAreas", []),
+            "scoreTrend": dashboard.get("scoreTrend", []),
+        },
+        "mock_interviews": mock_interviews[-10:],
+        "metrics": metrics[-20:],
+        "resume": resume_profile,
+    }
 
 def get_prev_summary(user_id:str):
     response=(
@@ -173,6 +354,23 @@ def get_dashboard_data(user_id: str):
     )
     sessions = sessions_response.data or []
 
+    mock_response = (
+        supabase
+        .table("mock_interview_sessions")
+        .select("mock_interview_id, session_id, interview_type, role_focus, difficulty_level, status, overall_score, started_at, completed_at")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    mock_interviews = mock_response.data or []
+    completed_mock_interviews = [
+        interview for interview in mock_interviews
+        if interview.get("status") == "completed"
+    ]
+    scored_mock_interviews = [
+        interview for interview in completed_mock_interviews
+        if interview.get("overall_score") is not None
+    ]
+
     weekly_sessions = []
     for offset in range(7):
         day = week_start + timedelta(days=offset)
@@ -183,6 +381,10 @@ def get_dashboard_data(user_id: str):
                 1
                 for session in sessions
                 if (_parse_timestamp(session.get("started_at")) or datetime.min.replace(tzinfo=timezone.utc)).date() == day
+            ) + sum(
+                1
+                for interview in mock_interviews
+                if (_parse_timestamp(interview.get("started_at")) or datetime.min.replace(tzinfo=timezone.utc)).date() == day
             ),
         })
 
@@ -214,7 +416,11 @@ def get_dashboard_data(user_id: str):
     ]
 
     average_score = None
-    if numeric_metrics:
+    if scored_mock_interviews:
+        average_score = round(
+            sum(float(interview["overall_score"]) for interview in scored_mock_interviews) / len(scored_mock_interviews)
+        )
+    elif numeric_metrics:
         average_score = round(
             sum(float(metric["score"]) for metric in numeric_metrics) / len(numeric_metrics)
         )
@@ -232,6 +438,17 @@ def get_dashboard_data(user_id: str):
         for category, scores in performance_by_category.items()
     ]
 
+    mock_performance_by_type = {}
+    for interview in scored_mock_interviews:
+        interview_type = interview.get("interview_type") or "Mock Interview"
+        mock_performance_by_type.setdefault(interview_type, []).append(float(interview["overall_score"]))
+
+    for interview_type, scores in mock_performance_by_type.items():
+        performance_areas.append({
+            "label": interview_type.replace("_", " ").replace("-", " ").title(),
+            "score": round(sum(scores) / len(scores)),
+        })
+
     score_trend_by_day = {}
     for metric in numeric_metrics:
         timestamp = _parse_timestamp(metric.get("created_at"))
@@ -239,6 +456,12 @@ def get_dashboard_data(user_id: str):
             continue
         day = timestamp.date().isoformat()
         score_trend_by_day.setdefault(day, []).append(float(metric["score"]))
+    for interview in scored_mock_interviews:
+        timestamp = _parse_timestamp(interview.get("completed_at") or interview.get("started_at"))
+        if not timestamp:
+            continue
+        day = timestamp.date().isoformat()
+        score_trend_by_day.setdefault(day, []).append(float(interview["overall_score"]))
 
     score_trend = [
         {
@@ -262,10 +485,26 @@ def get_dashboard_data(user_id: str):
     for session in sessions:
         recent_activity.append({
             "id": f"session-{session.get('session_id')}",
-            "action": "Practice Session",
+            "action": "Mentor Session",
             "detail": "AI Mentor conversation started",
             "created_at": session.get("started_at"),
             "time": _relative_time(session.get("started_at")),
+        })
+    for interview in mock_interviews:
+        completed = interview.get("status") == "completed"
+        score = interview.get("overall_score")
+        interview_label = (interview.get("interview_type") or "Mock interview").replace("_", " ").replace("-", " ").title()
+        detail = interview_label
+        if interview.get("role_focus"):
+            detail = f"{detail} - {interview.get('role_focus')}"
+        if completed and score is not None:
+            detail = f"{detail}: {round(float(score))}/100"
+        recent_activity.append({
+            "id": f"mock-{interview.get('mock_interview_id')}",
+            "action": "Mock Interview Completed" if completed else "Mock Interview Started",
+            "detail": detail,
+            "created_at": interview.get("completed_at") or interview.get("started_at"),
+            "time": _relative_time(interview.get("completed_at") or interview.get("started_at")),
         })
     for metric in metrics:
         score = metric.get("score")
@@ -300,27 +539,39 @@ def get_dashboard_data(user_id: str):
         if (_parse_timestamp(session.get("started_at")) or datetime.min.replace(tzinfo=timezone.utc))
         >= datetime.fromisoformat(week_start_iso)
     )
+    mock_this_week = sum(
+        1
+        for interview in mock_interviews
+        if (_parse_timestamp(interview.get("started_at")) or datetime.min.replace(tzinfo=timezone.utc))
+        >= datetime.fromisoformat(week_start_iso)
+    )
+    completed_this_week = sum(
+        1
+        for interview in completed_mock_interviews
+        if (_parse_timestamp(interview.get("completed_at") or interview.get("started_at")) or datetime.min.replace(tzinfo=timezone.utc))
+        >= datetime.fromisoformat(week_start_iso)
+    )
 
     return {
         "success": True,
         "stats": [
             {
-                "id": "sessions",
-                "label": "Practice Sessions",
-                "value": len(sessions),
-                "change": f"{sessions_this_week} this week",
+                "id": "interviews",
+                "label": "Interviews Completed",
+                "value": len(completed_mock_interviews),
+                "change": f"{completed_this_week} this week",
             },
             {
                 "id": "score",
                 "label": "Average Score",
                 "value": f"{average_score}%" if average_score is not None else "No scores yet",
-                "change": f"{len(numeric_metrics)} scored attempts",
+                "change": f"{len(scored_mock_interviews) or len(numeric_metrics)} scored attempts",
             },
             {
-                "id": "messages",
-                "label": "Mentor Messages",
-                "value": len(messages),
-                "change": "Recent saved messages",
+                "id": "sessions",
+                "label": "Practice Sessions",
+                "value": len(mock_interviews),
+                "change": f"{mock_this_week} this week",
             },
             {
                 "id": "resumes",

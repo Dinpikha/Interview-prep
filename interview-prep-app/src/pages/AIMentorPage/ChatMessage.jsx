@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo, useState } from 'react'
-import { Bot, User } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Bot, ExternalLink, User } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 function isTableSeparator(line) {
@@ -28,6 +29,159 @@ function parseTable(lines, startIndex) {
   }
 
   return { rows, nextIndex: index }
+}
+
+function renderInline(text) {
+  const parts = []
+  const pattern = /(\[([^\]]+)\]\((https?:\/\/[^)]+)\)|https?:\/\/[^\s)]+|\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g
+  let lastIndex = 0
+  let match
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index))
+    }
+
+    const token = match[0]
+    if (token.startsWith('[')) {
+      const linkMatch = token.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/)
+      parts.push(
+        <motion.a
+          key={`${match.index}-link`}
+          href={linkMatch?.[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-accent underline-offset-2 hover:underline"
+          whileHover={{ y: -1 }}
+        >
+          {linkMatch?.[1] || token}
+        </motion.a>,
+      )
+    } else if (token.startsWith('http')) {
+      const cleanUrl = token.replace(/[.,;:!?]+$/, '')
+      const trailing = token.slice(cleanUrl.length)
+      parts.push(
+        <motion.a
+          key={`${match.index}-url`}
+          href={cleanUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-accent underline-offset-2 transition-colors hover:text-foreground hover:underline"
+          initial={{ opacity: 0.88 }}
+          animate={{ opacity: 1 }}
+          whileHover={{ y: -1 }}
+        >
+          {cleanUrl}
+        </motion.a>,
+      )
+      if (trailing) parts.push(trailing)
+    } else if (token.startsWith('**')) {
+      parts.push(
+        <strong key={`${match.index}-bold`} className="font-semibold text-foreground">
+          {token.slice(2, -2)}
+        </strong>,
+      )
+    } else if (token.startsWith('*')) {
+      parts.push(
+        <em key={`${match.index}-italic`} className="italic">
+          {token.slice(1, -1)}
+        </em>,
+      )
+    } else {
+      parts.push(
+        <code key={`${match.index}-code`} className="rounded bg-secondary px-1 py-0.5 text-[0.92em] text-accent">
+          {token.slice(1, -1)}
+        </code>,
+      )
+    }
+
+    lastIndex = match.index + token.length
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+
+  return parts
+}
+
+function RichText({ content }) {
+  const lines = content.split('\n')
+  const elements = []
+  let index = 0
+
+  while (index < lines.length) {
+    const line = lines[index]
+    const trimmed = line.trim()
+
+    if (!trimmed) {
+      index += 1
+      continue
+    }
+
+    const heading = trimmed.match(/^(#{1,3})\s+(.+)$/)
+    if (heading) {
+      elements.push(
+        <p key={index} className="text-sm font-semibold text-foreground">
+          {renderInline(heading[2])}
+        </p>,
+      )
+      index += 1
+      continue
+    }
+
+    if (/^[-*]\s+/.test(trimmed)) {
+      const items = []
+      while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
+        items.push(lines[index].trim().replace(/^[-*]\s+/, ''))
+        index += 1
+      }
+      elements.push(
+        <ul key={index} className="list-disc space-y-1 pl-5">
+          {items.map((item, itemIndex) => (
+            <li key={itemIndex}>{renderInline(item)}</li>
+          ))}
+        </ul>,
+      )
+      continue
+    }
+
+    if (/^\d+\.\s+/.test(trimmed)) {
+      const items = []
+      while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
+        items.push(lines[index].trim().replace(/^\d+\.\s+/, ''))
+        index += 1
+      }
+      elements.push(
+        <ol key={index} className="list-decimal space-y-1 pl-5">
+          {items.map((item, itemIndex) => (
+            <li key={itemIndex}>{renderInline(item)}</li>
+          ))}
+        </ol>,
+      )
+      continue
+    }
+
+    const paragraph = []
+    while (
+      index < lines.length &&
+      lines[index].trim() &&
+      !/^(#{1,3})\s+/.test(lines[index].trim()) &&
+      !/^[-*]\s+/.test(lines[index].trim()) &&
+      !/^\d+\.\s+/.test(lines[index].trim())
+    ) {
+      paragraph.push(lines[index].trim())
+      index += 1
+    }
+
+    elements.push(
+      <p key={index} className="whitespace-pre-wrap">
+        {renderInline(paragraph.join(' '))}
+      </p>,
+    )
+  }
+
+  return <div className="space-y-2.5">{elements}</div>
 }
 
 function MarkdownContent({ content }) {
@@ -68,7 +222,7 @@ function MarkdownContent({ content }) {
                   <tr>
                     {header.map((cell, cellIndex) => (
                       <th key={cellIndex} className="border-b border-border px-3 py-2 font-semibold">
-                        {cell}
+                        {renderInline(cell)}
                       </th>
                     ))}
                   </tr>
@@ -78,7 +232,7 @@ function MarkdownContent({ content }) {
                     <tr key={rowIndex} className="odd:bg-background even:bg-secondary/30">
                       {header.map((_, cellIndex) => (
                         <td key={cellIndex} className="border-t border-border px-3 py-2 text-muted">
-                          {row[cellIndex] || ''}
+                          {renderInline(row[cellIndex] || '')}
                         </td>
                       ))}
                     </tr>
@@ -89,38 +243,54 @@ function MarkdownContent({ content }) {
           )
         }
 
-        return (
-          <p key={blockIndex} className="whitespace-pre-wrap">
-            {block.content}
-          </p>
-        )
+        return <RichText key={blockIndex} content={block.content} />
       })}
     </div>
   )
 }
 
+function removeDuplicateSourceSection(content, sources) {
+  if (!sources?.length) return content
+
+  const lines = content.split('\n')
+  const sourceHeadingIndex = lines.findLastIndex((line) =>
+    /^\s*(#{1,6}\s*)?(sources|references)\s*:?\s*$/i.test(line.trim()),
+  )
+
+  if (sourceHeadingIndex === -1) return content
+
+  const trailingLines = lines.slice(sourceHeadingIndex + 1)
+  const hasUrlList = trailingLines.some((line) => /https?:\/\/|\[[^\]]+\]\(https?:\/\//.test(line))
+
+  return hasUrlList ? lines.slice(0, sourceHeadingIndex).join('\n').trim() : content
+}
+
 function ChatMessage({ message, shouldAnimate, onPartialChange, onAnimationComplete }) {
   const isUser = message.role === 'user'
+  const cleanContent = useMemo(
+    () => removeDuplicateSourceSection(message.content, message.sources),
+    [message.content, message.sources],
+  )
 
-  const [count, setCount] = useState(() => (shouldAnimate ? 0 : message.content.length))
+  const [count, setCount] = useState(() => (shouldAnimate ? 0 : cleanContent.length))
   const displayedText = useMemo(
-    () => (shouldAnimate ? message.content.slice(0, count) : message.content),
-    [count, message.content, shouldAnimate],
+    () => (shouldAnimate ? cleanContent.slice(0, count) : cleanContent),
+    [cleanContent, count, shouldAnimate],
   )
 
   useEffect(() => {
     if (!shouldAnimate) return
     onPartialChange?.(message.id, displayedText)
 
-    if (count < message.content.length) {
+    if (count < cleanContent.length) {
       const timer = setTimeout(() => {
-        setCount((prev) => Math.min(prev + 4, message.content.length))
+        setCount((prev) => Math.min(prev + 4, cleanContent.length))
       }, 16)
       return () => clearTimeout(timer)
     } else {
       onAnimationComplete?.(message.id)
     }
-  }, [count, displayedText, message.content, shouldAnimate, message.id, onAnimationComplete, onPartialChange])
+  }, [cleanContent, count, displayedText, shouldAnimate, message.id, onAnimationComplete, onPartialChange])
 
   return (
     <div className={cn('group flex gap-3', isUser && 'flex-row-reverse')}>
@@ -142,13 +312,34 @@ function ChatMessage({ message, shouldAnimate, onPartialChange, onAnimationCompl
               : message.tone === 'error'
                 ? 'rounded-tl-md border border-danger/30 bg-danger/5 text-danger'
                 : 'rounded-tl-md border border-border bg-card text-foreground',
-          )}>
-            {isUser ? message.content : <MarkdownContent content={displayedText} />}
+          )}
+        >
+          {isUser ? message.content : <MarkdownContent content={displayedText} />}
+        </div>
+
+        {!isUser && message.sources?.length > 0 && !shouldAnimate && (
+          <div className="mt-3 max-w-full space-y-2">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sources</p>
+            <div className="flex max-w-full flex-wrap gap-2">
+              {message.sources.map((source, index) => (
+                <motion.a
+                  key={`${source.url}-${index}`}
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-secondary/70 px-3 py-1 text-xs font-medium text-muted transition-colors hover:border-primary/40 hover:text-foreground"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -1 }}
+                >
+                  <ExternalLink className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{source.title || source.url}</span>
+                </motion.a>
+              ))}
+            </div>
           </div>
-      
-          
-          
-        
+        )}
+
         <p className="text-xs text-muted-foreground">{message.timestamp}</p>
       </div>
     </div>

@@ -20,7 +20,7 @@ export default function PerformanceBreakdown({ performanceAreas = [], loading = 
       <CardHeader>
         <CardTitle>Performance by Area</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5 pt-0">
+      <CardContent className="space-y-6 pt-4">
         {loading ? (
           [0, 1, 2, 3].map((item) => (
             <div key={item} className="space-y-2">
@@ -32,7 +32,7 @@ export default function PerformanceBreakdown({ performanceAreas = [], loading = 
           <>
             {performanceAreas.length >= 3 && (
               <motion.div
-                className="h-56 rounded-lg border border-border bg-background/70 p-3"
+                className="h-64 rounded-lg border border-border bg-background/70 p-5"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
               >
@@ -62,7 +62,7 @@ export default function PerformanceBreakdown({ performanceAreas = [], loading = 
               {performanceAreas.map((area, index) => (
                 <motion.div
                   key={area.label}
-                  className="rounded-lg border border-border bg-background p-3 transition-colors hover:border-primary/30 hover:bg-secondary/20"
+                  className="rounded-lg border border-border bg-background p-4 transition-colors hover:border-primary/30 hover:bg-secondary/20"
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}

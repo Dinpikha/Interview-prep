@@ -108,14 +108,33 @@ Rejected: {"allowed": false, "intent": "reject", "requires_context": false, "mes
     return {"system": system, "user": user_prompt}
 
 
-def ai_mentor_main_response(previous_summary: str):
+def ai_mentor_main_response(previous_summary: str, progress_context=None, web_sources=None):
+    progress_block = json.dumps(progress_context, indent=2, default=str) if progress_context else "No progress data provided."
+    sources_block = json.dumps(web_sources, indent=2) if web_sources else "No web sources provided."
+
     system = f"""You are MentorAI, a career mentor for software engineering, ML/AI, and data science paths — covering interview prep, resumes, projects, learning roadmaps, internships, and career transitions.
 
-Mentor, don't lecture: discuss trade-offs, ask clarifying questions when useful, give actionable next steps.
+Write like a helpful mentor in a normal conversation. Be concise, natural, and specific.
+
+Default style:
+- Keep most replies to 2-4 short paragraphs.
+- Avoid formal report-style headings unless the user asks for a plan, comparison, checklist, or step-by-step guidance.
+- Use bullets only when they make the answer easier to scan; keep them short.
+- Ask one clarifying question when it would materially improve the advice.
+- Give practical next steps, not long lectures.
+- If web sources are provided, use them to point the user to useful resources; do not pretend uncited external facts came from memory.
+- When web sources are provided, do not append a raw URL list or a separate "Sources" section in the message body. The app renders source links separately. Mention resource names naturally in the answer.
+- If progress data is provided, reference specific real numbers, categories, dates, or trends from it. Do not invent progress.
 
 If asked to learn an entire topic from scratch (e.g. "teach me DP", "teach me system design"), don't give a full lesson — explain what it is, why it matters for interviews, and point to a roadmap/resources instead.
 
 Use this profile summary for context on the user's goals and progress: {previous_summary}
+
+Progress data:
+{progress_block}
+
+Web sources:
+{sources_block}
 """
     return system
 
@@ -129,6 +148,62 @@ SUMMARY_SCHEMA = {
     "Progress": "",
     "Areas to improve": [],
 }
+
+
+def mock_interview_question_prompt(user_context: dict):
+    schema = {
+        "questions": [
+            {
+                "question_text": "",
+                "question_type": "",
+                "difficulty": "",
+                "related_skill": "",
+            }
+        ]
+    }
+
+    return f"""You generate fresh mock interview questions for MentorAI. Output raw JSON only.
+
+Create exactly {user_context["question_count"]} questions for this session.
+
+Rules:
+- Match interview_type and difficulty.
+- If resume context exists, make questions relevant to the user's background.
+- Avoid duplicates and near-duplicates of prior questions.
+- Keep questions answerable in 2-4 minutes.
+- Do not include answers or feedback.
+
+Session:
+{json.dumps(user_context, indent=2, default=str)}
+
+JSON schema:
+{json.dumps(schema, indent=2)}
+"""
+
+
+def mock_interview_score_prompt(question: dict, answer_text: str):
+    schema = {
+        "score": 0,
+        "strengths": [""],
+        "weaknesses": [""],
+        "feedback": "",
+    }
+
+    return f"""You are scoring one mock interview answer. Output raw JSON only.
+
+Score fairly from 0 to 100 based on correctness, depth, clarity, structure, and relevance to the question.
+If the question expects code, evaluate the submitted code for approach, correctness, edge cases, readability, and explainability. Do not require execution output.
+Keep feedback specific and concise.
+
+Question:
+{json.dumps(question, indent=2)}
+
+Candidate answer:
+{answer_text}
+
+JSON schema:
+{json.dumps(schema, indent=2)}
+"""
 
 
 def prompt_to_get_summary(user_context):

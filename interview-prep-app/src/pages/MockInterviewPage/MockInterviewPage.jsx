@@ -4,7 +4,7 @@ import InterviewList from './InterviewList'
 import InterviewSession from './InterviewSession'
 
 export default function MockInterviewPage() {
-  const [activeFilter, setActiveFilter] = useState('All')
+  const [activeFilter, setActiveFilter] = useState({ category: null, difficulty: null })
   const [activeInterview, setActiveInterview] = useState(null)
 
   if (activeInterview) {

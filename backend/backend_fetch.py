@@ -9,6 +9,13 @@ from backend.api_file.resume_analyzer_api_file import resume_analyzer_
 from backend.api_file.create_session_api_file import create_session_
 from backend.api_file.delete_user_api_file import delete_user_
 from backend.api_file.return_summary_api_file import return_saved_summary
+from backend.api_file.mock_interview_api_file import (
+    complete_mock_interview_,
+    score_mock_answer_,
+    skip_mock_question_,
+    start_mock_interview_,
+)
+from backend.ai.groq_client import groq_transcribe_audio
 from backend.api_file import auth_route_api_file as auth
 from backend.auth.deps import get_current_user
 
@@ -22,8 +29,9 @@ class SessionRequest(BaseModel):
 class PromptRequest(BaseModel):
     user_prompt: str
     user_id: str
-    session_id: str
+    session_id: str | None = None
     role: str
+    web_search: bool = False
 
 
 class ai_mentor_chat(BaseModel):
@@ -76,6 +84,31 @@ class DeleteUserRequest(BaseModel):
 
 class DashboardRequest(BaseModel):
     user_id: str
+
+
+class StartMockInterviewRequest(BaseModel):
+    user_id: str
+    interview_type: str
+    difficulty: str | None = None
+    role_focus: str | None = None
+    question_count: int = 5
+    session_id: str | None = None
+
+
+class ScoreMockAnswerRequest(BaseModel):
+    user_id: str
+    mock_interview_id: str
+    mock_question_id: str
+    answer_text: str
+
+
+class CompleteMockInterviewRequest(BaseModel):
+    mock_interview_id: str
+
+
+class SkipMockQuestionRequest(BaseModel):
+    mock_interview_id: str
+    mock_question_id: str
 
 
 app.add_middleware(
@@ -147,7 +180,7 @@ def me_route(user: dict = Depends(get_current_user)):
 
 @app.post("/ai_mentor")
 def get_model_response(request: PromptRequest):
-    response = ai_mentor_response_(request.user_id, request.user_prompt, request.session_id, request.role)
+    response = ai_mentor_response_(request.user_id, request.user_prompt, request.session_id, request.role, request.web_search)
     return response
 
 
@@ -191,3 +224,52 @@ def dashboard_route(request: DashboardRequest):
     from Database.db import get_dashboard_data
 
     return get_dashboard_data(request.user_id)
+
+
+@app.post("/mock_interview/start")
+def start_mock_interview_route(request: StartMockInterviewRequest):
+    return start_mock_interview_(
+        user_id=request.user_id,
+        interview_type=request.interview_type,
+        difficulty=request.difficulty,
+        role_focus=request.role_focus,
+        question_count=request.question_count,
+        session_id=request.session_id,
+    )
+
+
+@app.post("/mock_interview/answer")
+def score_mock_answer_route(request: ScoreMockAnswerRequest):
+    return score_mock_answer_(
+        user_id=request.user_id,
+        mock_interview_id=request.mock_interview_id,
+        mock_question_id=request.mock_question_id,
+        answer_text=request.answer_text,
+    )
+
+
+@app.post("/mock_interview/complete")
+def complete_mock_interview_route(request: CompleteMockInterviewRequest):
+    return complete_mock_interview_(request.mock_interview_id)
+
+
+@app.post("/mock_interview/skip")
+def skip_mock_question_route(request: SkipMockQuestionRequest):
+    return skip_mock_question_(request.mock_interview_id, request.mock_question_id)
+
+
+@app.post("/mock_interview/transcribe")
+async def transcribe_mock_answer_route(audio: UploadFile = File(...)):
+    temp_path = None
+    try:
+        suffix = f".{audio.filename.split('.')[-1]}" if audio.filename and "." in audio.filename else ".webm"
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
+            contents = await audio.read()
+            temp_file.write(contents)
+            temp_path = temp_file.name
+        return {"success": True, "text": groq_transcribe_audio(temp_path)}
+    finally:
+        if temp_path:
+            import os
+            if os.path.exists(temp_path):
+                os.remove(temp_path)

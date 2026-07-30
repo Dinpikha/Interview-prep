@@ -11,7 +11,8 @@ from backend.ai_mentor_backend.generate_new_summary import generate_new_summary
 def ai_mentor_response_(user_id:str
                         ,user_prompt:str
                         ,session_id:str
-                        ,role:str):
+                        ,role:str
+                        ,web_search: bool = False):
        
     try:
         prev_summary = get_prev_summary(user_id)
@@ -49,7 +50,14 @@ def ai_mentor_response_(user_id:str
 
     # Generate AI response
     try:
-        response = ai_mentor(user_prompt, prev_summary)
+        mentor_result = ai_mentor(
+            user_prompt,
+            prev_summary,
+            user_id=user_id,
+            web_search_enabled=web_search,
+        )
+        response = mentor_result["response"]
+        sources = mentor_result.get("sources", [])
         # print(response)
     except Exception as e:
         print(e)
@@ -108,5 +116,6 @@ def ai_mentor_response_(user_id:str
 
     return {
         "success": True,
-        "response": response
+        "response": response,
+        "sources": sources,
     }

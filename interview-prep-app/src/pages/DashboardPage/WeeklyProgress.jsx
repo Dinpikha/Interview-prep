@@ -31,13 +31,18 @@ export default function WeeklyProgress({ weeklyProgress = [], scoreTrend = [], l
       <CardHeader>
         <CardTitle>{hasTrend ? 'Score Trend' : 'Weekly Activity'}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="space-y-4 pt-4">
         {loading ? (
           <ChartSkeleton />
         ) : hasTrend ? (
-          <div className="h-56">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 text-xs text-muted">
+              <span className="h-2 w-2 rounded-full bg-primary" />
+              Average score by day
+            </div>
+          <div className="h-64 rounded-lg border border-border bg-background/70 p-4">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={scoreTrend} margin={{ top: 8, right: 10, left: -24, bottom: 0 }}>
+              <LineChart data={scoreTrend} margin={{ top: 12, right: 16, left: -10, bottom: 8 }}>
                 <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
                 <YAxis domain={[0, 100]} tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
@@ -59,8 +64,9 @@ export default function WeeklyProgress({ weeklyProgress = [], scoreTrend = [], l
               </LineChart>
             </ResponsiveContainer>
           </div>
+          </div>
         ) : weeklyProgress.length > 0 ? (
-          <div className="flex items-end justify-between gap-2" style={{ height: '160px' }}>
+          <div className="flex h-48 items-end justify-between gap-3 rounded-lg border border-border bg-background/70 p-4">
             {weeklyProgress.map((item) => {
               const height = (item.sessions / maxSessions) * 100
 

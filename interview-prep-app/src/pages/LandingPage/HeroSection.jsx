@@ -50,19 +50,6 @@ export default function HeroSection() {
             Try Mock Interview
           </Button>
         </div>
-
-        <div className="mt-16 grid grid-cols-3 gap-4 border-t border-border pt-10 md:gap-8">
-          {[
-            { value: '10K+', label: 'Active learners' },
-            { value: '500+', label: 'Practice questions' },
-            { value: '95%', label: 'Success rate' },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <p className="text-2xl font-bold text-foreground md:text-3xl">{stat.value}</p>
-              <p className="mt-1 text-xs text-muted md:text-sm">{stat.label}</p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   )

@@ -3,7 +3,9 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui'
 
 const activityIcons = {
-  'Practice Session': MessageSquare,
+  'Mentor Session': MessageSquare,
+  'Mock Interview Completed': TrendingUp,
+  'Mock Interview Started': Clock,
   'Resume Updated': FileText,
   'Score Recorded': TrendingUp,
 }
@@ -14,7 +16,7 @@ export default function RecentActivity({ recentActivity = [], loading = false })
       <CardHeader>
         <CardTitle>Recent Activity</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 pt-0">
+      <CardContent className="space-y-5 pt-3">
         {loading ? (
           [0, 1, 2].map((item) => (
             <div key={item} className="flex gap-3">
@@ -32,12 +34,12 @@ export default function RecentActivity({ recentActivity = [], loading = false })
             return (
               <motion.div
                 key={item.id}
-                className="flex items-start gap-3 rounded-lg border border-border bg-background p-3 transition-colors hover:border-primary/30 hover:bg-secondary/20"
+                className="flex items-start gap-4 rounded-lg border border-border bg-background p-4 transition-colors hover:border-primary/30 hover:bg-secondary/20"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Icon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -48,7 +50,7 @@ export default function RecentActivity({ recentActivity = [], loading = false })
                       {item.time}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted">{item.detail}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{item.detail}</p>
                 </div>
               </motion.div>
             )

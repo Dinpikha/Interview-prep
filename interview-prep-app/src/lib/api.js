@@ -96,6 +96,50 @@ export function getDashboardData(userId) {
   })
 }
 
+export function startMockInterview(payload) {
+  return apiRequest('/mock_interview/start', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function scoreMockAnswer(payload) {
+  return apiRequest('/mock_interview/answer', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function completeMockInterview(mockInterviewId) {
+  return apiRequest('/mock_interview/complete', {
+    method: 'POST',
+    body: JSON.stringify({ mock_interview_id: mockInterviewId }),
+  })
+}
+
+export function skipMockQuestion(payload) {
+  return apiRequest('/mock_interview/skip', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function transcribeMockAnswer(audioBlob) {
+  const formData = new FormData()
+  formData.append('audio', audioBlob, 'answer.webm')
+
+  const response = await fetch(`${API_BASE_URL}/mock_interview/transcribe`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new ApiError('Unable to transcribe this recording.', response.status)
+  }
+
+  return response.json()
+}
+
 // ---------------------------------------------------------------- auth API
 export const authApi = {
   signup: (username, email, password) =>

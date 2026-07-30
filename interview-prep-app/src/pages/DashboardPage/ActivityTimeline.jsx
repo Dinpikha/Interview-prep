@@ -3,7 +3,9 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui'
 
 const activityIcons = {
-  'Practice Session': { icon: MessageSquare, tone: 'bg-primary/10 text-primary ring-primary/20' },
+  'Mentor Session': { icon: MessageSquare, tone: 'bg-primary/10 text-primary ring-primary/20' },
+  'Mock Interview Completed': { icon: TrendingUp, tone: 'bg-success/10 text-success ring-success/20' },
+  'Mock Interview Started': { icon: Clock, tone: 'bg-warning/10 text-warning ring-warning/20' },
   'Resume Updated': { icon: FileText, tone: 'bg-accent/10 text-accent ring-accent/20' },
   'Score Recorded': { icon: TrendingUp, tone: 'bg-success/10 text-success ring-success/20' },
 }
@@ -14,9 +16,9 @@ export default function ActivityTimeline({ recentActivity = [], loading = false 
       <CardHeader>
         <CardTitle>Activity Timeline</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-2">
         {loading ? (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {[0, 1, 2].map((item) => (
               <div key={item} className="flex gap-4">
                 <div className="h-8 w-8 rounded-full bg-secondary" />
@@ -28,7 +30,7 @@ export default function ActivityTimeline({ recentActivity = [], loading = false 
             ))}
           </div>
         ) : recentActivity.length > 0 ? (
-          <div className="relative space-y-1">
+          <div className="relative space-y-4">
             {recentActivity.map((item, index) => {
               const config = activityIcons[item.action] ?? {
                 icon: Clock,
@@ -40,21 +42,21 @@ export default function ActivityTimeline({ recentActivity = [], loading = false 
               return (
                 <motion.div
                   key={item.id}
-                  className="relative flex gap-4 rounded-lg p-2 transition-colors hover:bg-secondary/35"
+                  className="relative flex gap-5 rounded-lg p-3 transition-colors hover:bg-secondary/35"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.06 }}
                   whileHover={{ x: 2 }}
                 >
                   {!isLast && (
-                    <span className="absolute left-6 top-12 h-[calc(100%-1.25rem)] w-px bg-gradient-to-b from-border to-transparent" />
+                    <span className="absolute left-7 top-14 h-[calc(100%+0.5rem)] w-px bg-gradient-to-b from-border to-transparent" />
                   )}
                   <span
-                    className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-4 ${config.tone}`}
+                    className={`relative z-10 mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-4 ${config.tone}`}
                   >
                     <Icon className="h-4 w-4" />
                   </span>
-                  <div className="min-w-0 flex-1 rounded-lg border border-border bg-background px-4 py-3 shadow-sm transition-shadow hover:shadow-md">
+                  <div className="min-w-0 flex-1 rounded-lg border border-border bg-background px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <p className="text-sm font-medium text-foreground">{item.action}</p>
                       <p className="shrink-0 text-xs text-muted-foreground">{item.time}</p>

@@ -100,7 +100,9 @@ export function MentorChatProvider({ children }) {
           id: String(Date.now() + 1),
           role: 'assistant',
           content: data.response,
+          sources: data.sources || [],
           timestamp: getTimestamp(),
+          animate: true,
         }
 
         setMessages((prev) => [...prev, assistantMessage])
@@ -115,6 +117,7 @@ export function MentorChatProvider({ children }) {
           content: err?.message || 'I could not reach MentorAI. Please try again.',
           timestamp: getTimestamp(),
           tone: 'error',
+          animate: true,
         }
         setMessages((prev) => [...prev, errorMessage])
         setRespondingMessageId(errorMessage.id)
@@ -136,6 +139,15 @@ export function MentorChatProvider({ children }) {
     setIsTyping(false)
   }, [respondingMessageId])
 
+  const markMessageAnimated = useCallback((id) => {
+    if (!id) return
+    setMessages((prev) =>
+      prev.map((message) =>
+        message.id === id ? { ...message, animate: false } : message,
+      ),
+    )
+  }, [])
+
   const stopResponse = useCallback(() => {
     abortControllerRef.current?.abort()
     abortControllerRef.current = null
@@ -144,7 +156,7 @@ export function MentorChatProvider({ children }) {
     if (id && content) {
       setMessages((prev) =>
         prev.map((message) =>
-          message.id === id ? { ...message, content, stopped: true } : message,
+          message.id === id ? { ...message, content, stopped: true, animate: false } : message,
         ),
       )
     }
@@ -189,6 +201,7 @@ export function MentorChatProvider({ children }) {
     respondingMessageId,
     handlePartialResponse,
     finishResponse,
+    markMessageAnimated,
     startNewChat,
   }
 

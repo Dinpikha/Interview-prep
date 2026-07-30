@@ -41,14 +41,14 @@ export default function FeaturesSection() {
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-8 sm:grid-cols-2">
           {features.map(({ icon: Icon, title, description }) => (
             <Card
               key={title}
               className="transition-colors hover:border-primary/30"
             >
-              <CardHeader>
-                <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <CardHeader className="gap-3 p-6 md:p-8">
+                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Icon className="h-5 w-5" />
                 </span>
                 <CardTitle>{title}</CardTitle>

@@ -18,6 +18,7 @@ export default function AIMentorPage() {
     respondingMessageId,
     handlePartialResponse,
     finishResponse,
+    markMessageAnimated,
     startNewChat,
   } = useMentorChat()
 
@@ -34,13 +35,14 @@ export default function AIMentorPage() {
       </PageHeader>
 
       <Card className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex flex-1 flex-col overflow-hidden p-4 md:p-6 whitespace-pre-line">
+        <div className="flex flex-1 flex-col overflow-hidden p-4 md:p-6">
           <ChatMessages
             messages={messages}
             isTyping={isTyping}
             respondingMessageId={respondingMessageId}
             onPartialResponse={handlePartialResponse}
             onResponseComplete={finishResponse}
+            onMessageAnimated={markMessageAnimated}
           />
 
           <div className="mt-4 space-y-3 border-t border-border pt-4">

@@ -1,7 +1,7 @@
-import { Briefcase, Sparkles } from 'lucide-react'
+import { Briefcase, Sparkles, X } from 'lucide-react'
 import { Badge, Card, CardContent, CardHeader, CardTitle, Textarea } from '../../components/ui'
 
-export default function JobDescription({ value, onChange }) {
+export default function JobDescription({ value, onChange, onRemove }) {
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0
   const isThin = wordCount > 0 && wordCount < 30
 
@@ -23,6 +23,17 @@ export default function JobDescription({ value, onChange }) {
             <Badge variant={isThin ? 'warning' : 'primary'}>
               {wordCount} {wordCount === 1 ? 'word' : 'words'}
             </Badge>
+          )}
+
+          {onRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              className="rounded-md p-1.5 text-muted transition-colors hover:bg-secondary hover:text-foreground"
+              aria-label="Remove job description"
+            >
+              <X className="h-4 w-4" />
+            </button>
           )}
         </div>
       </CardHeader>

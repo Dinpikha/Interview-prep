@@ -1,11 +1,11 @@
-import { BarChart3, MessageSquare, Target, TrendingUp } from 'lucide-react'
+import { BarChart3, Target, TrendingUp, Trophy } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { StatCard } from '../../components/ui'
 
 const statIcons = {
+  interviews: Trophy,
   sessions: BarChart3,
   score: TrendingUp,
-  messages: MessageSquare,
   resumes: Target,
 }
 
@@ -25,7 +25,7 @@ function StatSkeleton() {
 export default function StatsOverview({ stats = [], loading = false }) {
   if (loading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {[0, 1, 2, 3].map((item) => (
           <StatSkeleton key={item} />
         ))}
@@ -34,7 +34,7 @@ export default function StatsOverview({ stats = [], loading = false }) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat, index) => (
         <motion.div
           key={stat.id}

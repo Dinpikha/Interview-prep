@@ -15,7 +15,7 @@ export default function DashboardPage() {
   } = useDashboardData()
 
   return (
-    <div>
+    <div className="space-y-10">
       <SummarySection
         title="Report Summary"
         description="A snapshot of what your mentor knows about your goals and progress."
@@ -33,7 +33,7 @@ export default function DashboardPage() {
         </Button>
       </PageHeader>
 
-      <div className="mb-8">
+      <div>
         <StatsOverview stats={data?.stats} loading={dashboardLoading} />
       </div>
 
@@ -42,11 +42,10 @@ export default function DashboardPage() {
           icon={AlertTriangle}
           title="Dashboard unavailable"
           description={dashboardError}
-          className="mb-8"
         />
       ) : (
-        <>
-          <div className="mb-8 grid gap-6 lg:grid-cols-2">
+        <div className="space-y-8">
+          <div className="grid gap-8 lg:grid-cols-2">
             <WeeklyProgress
               weeklyProgress={data?.weeklyProgress}
               scoreTrend={data?.scoreTrend}
@@ -62,7 +61,7 @@ export default function DashboardPage() {
             recentActivity={data?.recentActivity}
             loading={dashboardLoading}
           />
-        </>
+        </div>
       )}
     </div>
   )

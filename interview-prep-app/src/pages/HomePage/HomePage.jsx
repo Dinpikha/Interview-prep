@@ -1,17 +1,16 @@
 import { useNavigate } from 'react-router-dom'
-import { BarChart3, MessageSquare, Target, TrendingUp } from 'lucide-react'
+import { BarChart3, Target, TrendingUp, Trophy } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { ROUTES } from '../../constants/routes'
 import { Button, PageHeader, StatCard, SummarySection } from '../../components/ui'
 import QuickActions from './QuickActions'
 import RecentActivity from './RecentActivity'
-import RecommendedInterviews from './RecommendedInterviews'
 import { useDashboardData, useProfileSummary } from '../../hooks'
 
 const statIcons = {
+  interviews: Trophy,
   sessions: BarChart3,
   score: TrendingUp,
-  messages: MessageSquare,
   resumes: Target,
 }
 
@@ -42,7 +41,7 @@ export default function HomePage() {
         </Button>
       </PageHeader>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {dashboardLoading
           ? [0, 1, 2, 3].map((item) => (
               <div key={item} className="rounded-xl border border-border bg-card p-6">
@@ -72,13 +71,12 @@ export default function HomePage() {
             ))}
       </div>
 
-      <div className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Quick Actions</h2>
+      <div className="mb-10">
+        <h2 className="mb-6 text-lg font-semibold text-foreground">Quick Actions</h2>
         <QuickActions stats={dashboardData?.stats} loading={dashboardLoading} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RecommendedInterviews dashboardData={dashboardData} loading={dashboardLoading} />
+      <div>
         <RecentActivity recentActivity={dashboardData?.recentActivity} loading={dashboardLoading} />
       </div>
     </div>
