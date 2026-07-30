@@ -1,12 +1,18 @@
-import { Button, PageHeader, SummarySection } from '../../components/ui'
+import { Button, EmptyState, PageHeader, SummarySection } from '../../components/ui'
+import { AlertTriangle } from 'lucide-react'
 import StatsOverview from './StatsOverview'
 import WeeklyProgress from './WeeklyProgress'
 import PerformanceBreakdown from './PerformanceBreakdown'
 import ActivityTimeline from './ActivityTimeline'
-import { useProfileSummary } from '../../hooks'
+import { useDashboardData, useProfileSummary } from '../../hooks'
 
 export default function DashboardPage() {
   const { profile, loading, error } = useProfileSummary()
+  const {
+    data,
+    loading: dashboardLoading,
+    error: dashboardError,
+  } = useDashboardData()
 
   return (
     <div>
@@ -28,15 +34,36 @@ export default function DashboardPage() {
       </PageHeader>
 
       <div className="mb-8">
-        <StatsOverview />
+        <StatsOverview stats={data?.stats} loading={dashboardLoading} />
       </div>
 
-      <div className="mb-8 grid gap-6 lg:grid-cols-2">
-        <WeeklyProgress />
-        <PerformanceBreakdown />
-      </div>
+      {dashboardError && !dashboardLoading ? (
+        <EmptyState
+          icon={AlertTriangle}
+          title="Dashboard unavailable"
+          description={dashboardError}
+          className="mb-8"
+        />
+      ) : (
+        <>
+          <div className="mb-8 grid gap-6 lg:grid-cols-2">
+            <WeeklyProgress
+              weeklyProgress={data?.weeklyProgress}
+              scoreTrend={data?.scoreTrend}
+              loading={dashboardLoading}
+            />
+            <PerformanceBreakdown
+              performanceAreas={data?.performanceAreas}
+              loading={dashboardLoading}
+            />
+          </div>
 
-      <ActivityTimeline />
+          <ActivityTimeline
+            recentActivity={data?.recentActivity}
+            loading={dashboardLoading}
+          />
+        </>
+      )}
     </div>
   )
 }

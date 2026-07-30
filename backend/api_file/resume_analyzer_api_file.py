@@ -8,18 +8,18 @@ from Database.db import (
 )
 
 from backend.ai_mentor_backend.generate_new_summary import generate_new_summary
-from backend.resume_analyzer_backend.scoring.score_calculator import analyze_resume
+from backend.resume_analyzer_backend.pipeline import analyze_resume
 from backend.resume_analyzer_backend.parser.extract_resume import get_text_and_links
 
-def resume_analyzer_(user_id: str, temp_path: str , resume_text=None , job_description = None,role =None):
+def resume_analyzer_(user_id: str, temp_path: str, job_description=None):
     try:
+        if not temp_path:
+            raise HTTPException(status_code=400, detail="Resume PDF is required.")
+
         prev_summary = get_prev_summary(user_id)
 
-        response = analyze_resume(temp_path,resume_text,job_description,role)
-        if temp_path!=None:
-            resume_content=get_text_and_links(temp_path)
-        if resume_text : 
-            resume_content= resume_text
+        response = analyze_resume(temp_path, job_description)
+        resume_content = get_text_and_links(temp_path)
         user_context = {
             "summary": prev_summary,
             "conversation": {
@@ -48,6 +48,8 @@ def resume_analyzer_(user_id: str, temp_path: str , resume_text=None , job_descr
 
     except Exception as e:
         print(e)
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(
             status_code=500,
             detail=str(e),

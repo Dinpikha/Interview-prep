@@ -1,33 +1,86 @@
-import { weeklyProgress } from './dashboardData'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui'
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
-const maxSessions = Math.max(...weeklyProgress.map((d) => d.sessions), 1)
+function ChartSkeleton() {
+  return (
+    <div className="space-y-3">
+      <div className="h-40 rounded-lg bg-secondary" />
+      <div className="grid grid-cols-7 gap-2">
+        {[0, 1, 2, 3, 4, 5, 6].map((item) => (
+          <div key={item} className="h-3 rounded bg-secondary" />
+        ))}
+      </div>
+    </div>
+  )
+}
 
-export default function WeeklyProgress() {
+export default function WeeklyProgress({ weeklyProgress = [], scoreTrend = [], loading = false }) {
+  const maxSessions = Math.max(...weeklyProgress.map((d) => d.sessions), 1)
+  const hasTrend = scoreTrend.length > 0
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Weekly Activity</CardTitle>
+        <CardTitle>{hasTrend ? 'Score Trend' : 'Weekly Activity'}</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex items-end justify-between gap-2" style={{ height: '160px' }}>
-          {weeklyProgress.map((item) => {
-            const height = (item.sessions / maxSessions) * 100
+        {loading ? (
+          <ChartSkeleton />
+        ) : hasTrend ? (
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={scoreTrend} margin={{ top: 8, right: 10, left: -24, bottom: 0 }}>
+                <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                <YAxis domain={[0, 100]} tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--color-card)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 8,
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="score"
+                  stroke="var(--color-primary)"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: 'var(--color-primary)' }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : weeklyProgress.length > 0 ? (
+          <div className="flex items-end justify-between gap-2" style={{ height: '160px' }}>
+            {weeklyProgress.map((item) => {
+              const height = (item.sessions / maxSessions) * 100
 
-            return (
-              <div key={item.day} className="flex flex-1 flex-col items-center gap-2">
-                <span className="text-xs font-medium text-foreground">{item.sessions}</span>
-                <div className="flex w-full flex-1 items-end">
-                  <div
-                    className="w-full rounded-t-md bg-primary/80 transition-all hover:bg-primary"
-                    style={{ height: `${Math.max(height, 8)}%` }}
-                  />
+              return (
+                <div key={item.date || item.day} className="flex flex-1 flex-col items-center gap-2">
+                  <span className="text-xs font-medium text-foreground">{item.sessions}</span>
+                  <div className="flex w-full flex-1 items-end">
+                    <div
+                      className="w-full rounded-t-md bg-primary/80 transition-all duration-300 hover:bg-primary"
+                      style={{ height: `${Math.max(height, item.sessions > 0 ? 8 : 2)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted">{item.day}</span>
                 </div>
-                <span className="text-xs text-muted">{item.day}</span>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-muted">No activity has been saved yet.</p>
+        )}
       </CardContent>
     </Card>
   )

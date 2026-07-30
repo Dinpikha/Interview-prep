@@ -1,4 +1,4 @@
-import { Send } from 'lucide-react'
+import { Send, Square } from 'lucide-react'
 import { Button, Input } from '../../components/ui'
 import WebSearchToggle from './WebSearchToggle'
 
@@ -7,6 +7,8 @@ export default function ChatInput({
   onChange,
   onSend,
   disabled,
+  isResponding,
+  onStop,
   webSearchEnabled,
   onToggleWebSearch,
 }) {
@@ -33,10 +35,17 @@ export default function ChatInput({
         wrapperClassName="flex-1"
         className="h-11"
       />
-      <Button type="submit" size="lg" disabled={disabled || !value.trim()}>
-        <Send className="h-4 w-4" />
-        <span className="sr-only">Send message</span>
-      </Button>
+      {isResponding ? (
+        <Button type="button" variant="outline" size="lg" onClick={onStop}>
+          <Square className="h-4 w-4 fill-current" />
+          Stop
+        </Button>
+      ) : (
+        <Button type="submit" size="lg" disabled={disabled || !value.trim()}>
+          <Send className="h-4 w-4" />
+          <span className="sr-only">Send message</span>
+        </Button>
+      )}
     </form>
   )
 }

@@ -49,7 +49,8 @@ export async function apiRequest(path, options = {}, { auth = true, _retried = f
   let response
   try {
     response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers })
-  } catch {
+  } catch (err) {
+    if (err?.name === 'AbortError') throw err
     const message = 'Unable to reach the server. Check your connection and try again.'
     emitToast({ variant: 'error', title: 'Connection error', message })
     throw new ApiError(message, 0)
@@ -69,7 +70,7 @@ export async function apiRequest(path, options = {}, { auth = true, _retried = f
   try {
     data = await response.json()
   } catch {
-  
+    // Some error responses do not include JSON bodies.
   }
 
   if (!response.ok) {
@@ -83,6 +84,13 @@ export async function apiRequest(path, options = {}, { auth = true, _retried = f
 
 export function getProfileSummary(userId) {
   return apiRequest('/return_summary', {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId }),
+  })
+}
+
+export function getDashboardData(userId) {
+  return apiRequest('/dashboard', {
     method: 'POST',
     body: JSON.stringify({ user_id: userId }),
   })

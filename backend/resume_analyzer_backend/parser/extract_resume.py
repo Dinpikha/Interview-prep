@@ -103,5 +103,3 @@ def return_santized_structured_json(pdf_path):
     markdown=re.sub(email_pattern,"<EMAIL>",markdown)
     extracted_text=markdown_to_json(markdown)
     return extracted_text
-
-# print(return_santized_structured_json('/home/Dipika/Downloads/Core_resume.pdf'))

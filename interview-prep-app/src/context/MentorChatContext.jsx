@@ -30,14 +30,16 @@ export function MentorChatProvider({ children }) {
   const userId = user?.user_id ?? null
 
   const [messages, setMessages] = useState(mentorMessages)
-  const [currentlyAnimatingId, setCurrentlyAnimatingId] = useState(null)
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [webSearchEnabled, setWebSearchEnabled] = useState(false)
   const [sessionId, setSessionId] = useState(null)
+  const [respondingMessageId, setRespondingMessageId] = useState(null)
 
   
   const sessionOwnerId = useRef(null)
+  const abortControllerRef = useRef(null)
+  const partialResponseRef = useRef({ id: null, content: '' })
 
   useEffect(() => {
    
@@ -76,10 +78,15 @@ export function MentorChatProvider({ children }) {
       setMessages((prev) => [...prev, userMessage])
       setInput('')
       setIsTyping(true)
+      setRespondingMessageId(null)
+      partialResponseRef.current = { id: null, content: '' }
+      const abortController = new AbortController()
+      abortControllerRef.current = abortController
 
       try {
         const data = await apiRequest('/ai_mentor', {
           method: 'POST',
+          signal: abortController.signal,
           body: JSON.stringify({
             user_prompt: content,
             web_search: webSearchEnabled,
@@ -97,15 +104,55 @@ export function MentorChatProvider({ children }) {
         }
 
         setMessages((prev) => [...prev, assistantMessage])
+        setRespondingMessageId(assistantMessage.id)
+        partialResponseRef.current = { id: assistantMessage.id, content: '' }
       } catch (err) {
-       
+        if (err?.name === 'AbortError') return
         console.error(err)
+        const errorMessage = {
+          id: String(Date.now() + 1),
+          role: 'assistant',
+          content: err?.message || 'I could not reach MentorAI. Please try again.',
+          timestamp: getTimestamp(),
+          tone: 'error',
+        }
+        setMessages((prev) => [...prev, errorMessage])
+        setRespondingMessageId(errorMessage.id)
       } finally {
-        setIsTyping(false)
+        abortControllerRef.current = null
       }
     },
     [userId, sessionId, webSearchEnabled],
   )
+
+  const handlePartialResponse = useCallback((id, content) => {
+    partialResponseRef.current = { id, content }
+  }, [])
+
+  const finishResponse = useCallback((id) => {
+    if (!id || id !== respondingMessageId) return
+    partialResponseRef.current = { id: null, content: '' }
+    setRespondingMessageId(null)
+    setIsTyping(false)
+  }, [respondingMessageId])
+
+  const stopResponse = useCallback(() => {
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = null
+
+    const { id, content } = partialResponseRef.current
+    if (id && content) {
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.id === id ? { ...message, content, stopped: true } : message,
+        ),
+      )
+    }
+
+    partialResponseRef.current = { id: null, content: '' }
+    setRespondingMessageId(null)
+    setIsTyping(false)
+  }, [])
 
 
   const startNewChat = useCallback(async () => {
@@ -117,6 +164,10 @@ export function MentorChatProvider({ children }) {
     setMessages(mentorMessages)
     setInput('')
     setIsTyping(false)
+    setRespondingMessageId(null)
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = null
+    partialResponseRef.current = { id: null, content: '' }
 
     try {
       const id = await createSession(userId)
@@ -134,6 +185,10 @@ export function MentorChatProvider({ children }) {
     webSearchEnabled,
     setWebSearchEnabled,
     sendMessage,
+    stopResponse,
+    respondingMessageId,
+    handlePartialResponse,
+    finishResponse,
     startNewChat,
   }
 

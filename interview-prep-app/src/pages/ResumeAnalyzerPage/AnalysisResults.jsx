@@ -10,6 +10,11 @@ import {
   Flame,
   Info,
   ShieldCheck,
+  FileCheck2,
+  GraduationCap,
+  FolderGit2,
+  Wrench,
+  Award,
 } from 'lucide-react'
 import { Badge, Card, CardContent, CardHeader, CardTitle, EmptyState } from '../../components/ui'
 
@@ -169,6 +174,114 @@ function LinkStatus({ icon: Icon, label, data }) {
   )
 }
 
+function FieldList({ items }) {
+  const entries = Object.entries(items || {}).filter(([, value]) => {
+    if (value == null) return false
+    if (Array.isArray(value)) return value.length > 0
+    return String(value).trim().length > 0
+  })
+
+  if (!entries.length) return null
+
+  return (
+    <dl className="grid gap-2 text-sm sm:grid-cols-2">
+      {entries.map(([key, value]) => (
+        <div key={key} className="rounded-md bg-secondary/40 px-3 py-2">
+          <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            {key.replaceAll('_', ' ')}
+          </dt>
+          <dd className="mt-1 text-foreground">
+            {Array.isArray(value) ? value.join(', ') : String(value)}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+function ParsedResumeSection({ icon: Icon, title, children }) {
+  if (!children) return null
+
+  return (
+    <div className="rounded-lg border border-border bg-background p-4 transition-colors hover:border-primary/30 hover:bg-secondary/15">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Icon className="h-4 w-4" />
+        </span>
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function ParsedResumeBreakdown({ structured }) {
+  if (!structured) return null
+
+  const education = structured.education
+  const projects = structured.projects?.projects || []
+  const skillSets = structured.skills?.skill_sets || []
+  const achievements = structured.achievements?.achievements || []
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <ParsedResumeSection icon={GraduationCap} title="Education">
+        {education ? <FieldList items={education} /> : <p className="text-sm text-muted">No education section detected.</p>}
+      </ParsedResumeSection>
+
+      <ParsedResumeSection icon={Wrench} title="Skills">
+        {skillSets.length > 0 ? (
+          <div className="space-y-3">
+            {skillSets.map((set, index) => (
+              <div key={`${set.category || 'skills'}-${index}`} className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {set.category || 'Skills'}
+                </p>
+                <TagList items={set.skills} tone="positive" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted">No skills section detected.</p>
+        )}
+      </ParsedResumeSection>
+
+      <ParsedResumeSection icon={FolderGit2} title="Projects">
+        {projects.length > 0 ? (
+          <div className="space-y-3">
+            {projects.map((project, index) => (
+              <div key={`${project.name || 'project'}-${index}`} className="rounded-md bg-secondary/35 p-3">
+                <p className="text-sm font-medium text-foreground">{project.name || 'Project'}</p>
+                {project.description && (
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{project.description}</p>
+                )}
+                <TagList items={project.technologies} tone="positive" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted">No projects section detected.</p>
+        )}
+      </ParsedResumeSection>
+
+      <ParsedResumeSection icon={Award} title="Achievements">
+        {achievements.length > 0 ? (
+          <ul className="space-y-2">
+            {achievements.map((achievement, index) => (
+              <li key={`${achievement.title || 'achievement'}-${index}`} className="rounded-md bg-secondary/35 p-3">
+                <p className="text-sm font-medium text-foreground">{achievement.title}</p>
+                {achievement.year && <p className="mt-1 text-xs text-muted">{achievement.year}</p>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted">No achievements section detected.</p>
+        )}
+      </ParsedResumeSection>
+    </div>
+  )
+}
+
 export default function AnalysisResults({ hasResults, analysis }) {
   if (!hasResults) {
     return (
@@ -187,6 +300,161 @@ export default function AnalysisResults({ hasResults, analysis }) {
         title="Analysis failed"
         description="Something went wrong while analyzing your resume. Please try again."
       />
+    )
+  }
+
+  if (analysis.analysis === null && analysis.similarity_score === null) {
+    const structured = analysis.resume?.structured
+    const parsedSections = Object.values(structured || {}).filter(Boolean).length
+
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-start">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success">
+              <FileCheck2 className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 space-y-2">
+              <h2 className="text-lg font-semibold text-foreground">
+                Resume parsed — add a job description to get a match score
+              </h2>
+              <p className="text-sm leading-relaxed text-muted">
+                Your PDF was parsed successfully. Add a job description and run the analyzer again to
+                compare skills, gaps, and role fit.
+              </p>
+              {parsedSections > 0 && (
+                <Badge variant="success">
+                  {parsedSections} {parsedSections === 1 ? 'section' : 'sections'} detected
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Extracted Resume Details</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <ParsedResumeBreakdown structured={structured} />
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (analysis.analysis && typeof analysis.analysis.match_score === 'number') {
+    const fit = analysis.analysis
+    const similarityScore =
+      typeof analysis.similarity_score === 'number'
+        ? Math.round(Math.max(0, Math.min(1, analysis.similarity_score)) * 100)
+        : null
+
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="space-y-6 pt-6">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+              <ScoreRing score={fit.match_score} />
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-semibold text-foreground">{fit.recommendation}</h2>
+                  {similarityScore !== null && (
+                    <Badge variant={tier(similarityScore)}>Similarity {similarityScore}%</Badge>
+                  )}
+                </div>
+                <p className="text-sm leading-relaxed text-muted">{fit.experience_relevance}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 border-t border-border pt-5 sm:grid-cols-2">
+              <QuickScore label="Match Score" score={fit.match_score} />
+              {similarityScore !== null && (
+                <QuickScore label="Vector Similarity" score={similarityScore} />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {(fit.strengths?.length > 0 || fit.weaknesses?.length > 0) && (
+          <Card>
+            <CardContent className="grid gap-6 pt-6 sm:grid-cols-2 sm:divide-x sm:divide-border">
+              {fit.strengths?.length > 0 && (
+                <div className="space-y-2.5">
+                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                    Strengths
+                  </p>
+                  <ul className="space-y-2">
+                    {fit.strengths.map((item, i) => (
+                      <li key={i} className="text-sm leading-relaxed text-foreground">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {fit.weaknesses?.length > 0 && (
+                <div className="space-y-2.5 sm:pl-6">
+                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
+                    <XCircle className="h-3.5 w-3.5 text-danger" />
+                    Gaps
+                  </p>
+                  <ul className="space-y-2">
+                    {fit.weaknesses.map((item, i) => (
+                      <li key={i} className="text-sm leading-relaxed text-foreground">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Skill Match</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-5 pt-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Matching skills
+              </p>
+              <TagList items={fit.matching_skills} tone="positive" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Missing skills
+              </p>
+              <TagList items={fit.missing_skills} tone="negative" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {fit.improvement_suggestions?.length > 0 && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <ListChecks className="h-4 w-4 text-primary" />
+                <CardTitle>Priority Improvements</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-4">
+              {fit.improvement_suggestions.map((item, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-border border-l-4 border-l-primary bg-background p-4 text-sm leading-relaxed text-foreground"
+                >
+                  {item}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     )
   }
 

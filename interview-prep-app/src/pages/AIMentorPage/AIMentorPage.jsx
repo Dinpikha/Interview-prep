@@ -14,6 +14,10 @@ export default function AIMentorPage() {
     webSearchEnabled,
     setWebSearchEnabled,
     sendMessage,
+    stopResponse,
+    respondingMessageId,
+    handlePartialResponse,
+    finishResponse,
     startNewChat,
   } = useMentorChat()
 
@@ -31,7 +35,13 @@ export default function AIMentorPage() {
 
       <Card className="flex flex-1 flex-col overflow-hidden">
         <div className="flex flex-1 flex-col overflow-hidden p-4 md:p-6 whitespace-pre-line">
-          <ChatMessages messages={messages} isTyping={isTyping} />
+          <ChatMessages
+            messages={messages}
+            isTyping={isTyping}
+            respondingMessageId={respondingMessageId}
+            onPartialResponse={handlePartialResponse}
+            onResponseComplete={finishResponse}
+          />
 
           <div className="mt-4 space-y-3 border-t border-border pt-4">
             <SuggestionChips onSelect={sendMessage} disabled={isTyping} />
@@ -41,6 +51,8 @@ export default function AIMentorPage() {
               onChange={setInput}
               onSend={sendMessage}
               disabled={isTyping}
+              isResponding={isTyping}
+              onStop={stopResponse}
               webSearchEnabled={webSearchEnabled}
               onToggleWebSearch={setWebSearchEnabled}
             />

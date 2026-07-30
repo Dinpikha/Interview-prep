@@ -1,9 +1,7 @@
 import { FileText, Upload, X } from 'lucide-react'
-import { Button, Card, CardContent, CardHeader, CardTitle, Textarea } from '../../components/ui'
+import { Button, Card, CardContent, CardHeader, CardTitle } from '../../components/ui'
 
 export default function ResumeUpload({
-  resumeText,
-  onTextChange,
   selectedFile,
   onFileSelect,
   onAnalyze,
@@ -30,13 +28,14 @@ export default function ResumeUpload({
             <p className="text-sm font-medium text-foreground">
               Drop your resume here or click to browse
             </p>
-            <p className="text-xs text-muted">PDF, DOCX up to 5MB</p>
+            <p className="text-xs text-muted">PDF up to 5MB</p>
             <input
               id="resume-file"
               type="file"
-              accept=".pdf,.doc,.docx"
+              accept="application/pdf,.pdf"
               className="sr-only"
               onChange={handleFileChange}
+              disabled={isAnalyzing}
             />
           </label>
 
@@ -52,6 +51,7 @@ export default function ResumeUpload({
               <button
                 type="button"
                 onClick={() => onFileSelect(null)}
+                disabled={isAnalyzing}
                 className="shrink-0 rounded-md p-1 text-muted transition-colors hover:bg-border/50 hover:text-foreground"
                 aria-label="Remove file"
               >
@@ -61,26 +61,10 @@ export default function ResumeUpload({
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="h-px flex-1 bg-border" />
-          <span className="shrink-0 text-xs font-medium text-muted-foreground">
-            or paste resume text
-          </span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <Textarea
-          aria-label="Resume content"
-          placeholder="Paste your resume text here for analysis..."
-          value={resumeText}
-          onChange={(e) => onTextChange(e.target.value)}
-          className="min-h-48 leading-relaxed"
-        />
-
         <Button
           className="w-full"
           onClick={onAnalyze}
-          disabled={isAnalyzing || (!resumeText.trim() && !selectedFile)}
+          disabled={isAnalyzing || !selectedFile}
         >
           {isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
         </Button>

@@ -74,6 +74,10 @@ class DeleteUserRequest(BaseModel):
     username: str
 
 
+class DashboardRequest(BaseModel):
+    user_id: str
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -152,8 +156,6 @@ async def get_extracted_text(
     pdf: UploadFile | None = File(None),
     user_id: str = Form(...),
     job_description: str | None = Form(None),
-    resume_text: str | None = Form(None),
-    role: str | None = Form(None),
 ):  
     temp_path=None
     if pdf:
@@ -162,7 +164,7 @@ async def get_extracted_text(
             temp_file.write(contents)
             temp_path = temp_file.name
         
-    response = resume_analyzer_(user_id=user_id, temp_path=temp_path,job_description=job_description,resume_text=resume_text,role=role)
+    response = resume_analyzer_(user_id=user_id, temp_path=temp_path, job_description=job_description)
     return response
 
 
@@ -182,3 +184,10 @@ def delete_user_route(request: DeleteUserRequest):
 def return_summary(userid: SessionRequest):
     response = return_saved_summary(userid.user_id)
     return response
+
+
+@app.post("/dashboard")
+def dashboard_route(request: DashboardRequest):
+    from Database.db import get_dashboard_data
+
+    return get_dashboard_data(request.user_id)

@@ -13,7 +13,10 @@ export default function JobDescription({ value, onChange }) {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Briefcase className="h-4 w-4" />
             </span>
-            <CardTitle>Job Description</CardTitle>
+            <div>
+              <CardTitle>Job Description</CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">Optional</p>
+            </div>
           </div>
 
           {wordCount > 0 && (
@@ -26,14 +29,14 @@ export default function JobDescription({ value, onChange }) {
 
       <CardContent className="space-y-3 pt-4">
         <p className="text-sm text-muted">
-          Paste the job posting here. Your resume will be evaluated against its requirements and
-          keywords, so the more detail, the better the match.
+          Optional, but recommended for an accurate match score. If omitted, your resume will still
+          be parsed without scoring.
         </p>
 
         <Textarea
           aria-label="Job description"
           placeholder={
-            'Paste the job description here — role summary, responsibilities, required skills, and preferred qualifications...'
+            'Optional, but recommended for an accurate match score. Paste the role summary, responsibilities, required skills, and preferred qualifications...'
           }
           value={value}
           onChange={(e) => onChange(e.target.value)}
