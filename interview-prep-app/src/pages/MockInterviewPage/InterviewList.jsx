@@ -43,13 +43,13 @@ export default function InterviewList({ activeFilter, onFilterChange, onStart })
                 whileTap={{ scale: 0.98 }}
               >
                 <Card className="h-full transition-colors hover:border-primary/35">
-                  <CardHeader className="gap-4 p-6">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <CardHeader className="gap-10 p-6 pb- 8">
+                    <span className="flex h-12 w-16  items-center justify-center rounded-lg bg-primary/10 text-primary">
                       {Icon && <Icon className="h-5 w-5" />}
                     </span>
                     <div>
                       <CardTitle>{interview.title}</CardTitle>
-                      <p className="mt-2 text-sm leading-relaxed text-muted">{interview.description}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-muted pb-10">{interview.description}</p>
                     </div>
                   </CardHeader>
                 </Card>
