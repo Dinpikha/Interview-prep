@@ -25,6 +25,10 @@ pydantic==2.13.4
 pymupdf==1.28.0
 pymupdf4llm==1.28.0
 
+langchain-core
+sentence-transformers
+
+scikit-learn 
 # transformers
 # torch
 # datasets
