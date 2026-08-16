@@ -123,6 +123,11 @@ app.add_middleware(
 )
 
 
+@app.get("/health")
+def health_route():
+    return {"status": "ok"}
+
+
 
 @app.post("/auth/signup")
 def signup_route(request: SignupRequest):

@@ -175,9 +175,32 @@ Vite starts at `http://localhost:5173` by default.
 
 ### Run Tests
 
+Backend:
+
 ```bash
-python -m pytest tests/test_resume_analyzer_core.py -q
+python -m pytest tests -q
+python -m pytest tests -q --cov=backend --cov=Database --cov-report=term-missing
 ```
+
+Frontend:
+
+```bash
+cd interview-prep-app
+npm run test:run
+npm run test:coverage
+npm run build
+```
+
+The default tests mock Supabase, Groq, GitHub OAuth, browser speech recognition, and the sentence-transformer model. A slow real-embedding integration test is present but skipped by default so CI does not download `all-MiniLM-L6-v2` on every run.
+
+### CI
+
+GitHub Actions runs on pushes and pull requests to `main`.
+
+| Job | Validation |
+| --- | --- |
+| Backend Tests | Installs Python dependencies and runs `pytest` with coverage. |
+| Frontend Tests and Build | Runs Vitest coverage and `vite build`. |
 
 ## Important Endpoints
 

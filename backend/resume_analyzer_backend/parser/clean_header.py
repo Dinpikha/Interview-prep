@@ -33,6 +33,25 @@ HEADER_ALIASES = {
 }
 
 
+def merge_section_values(existing, incoming):
+    if isinstance(existing, dict) and isinstance(incoming, dict):
+        merged = dict(existing)
+        for key, value in incoming.items():
+            if key == "content" and key in merged:
+                merged[key] = "\n\n".join(
+                    part for part in [str(merged[key]).strip(), str(value).strip()] if part
+                )
+            elif key in merged:
+                merged[key] = merge_section_values(merged[key], value)
+            else:
+                merged[key] = value
+        return merged
+
+    if isinstance(existing, list) and isinstance(incoming, list):
+        return existing + incoming
+
+    return incoming if incoming not in (None, "", []) else existing
+
 
 def normalize_header(raw_header: str) -> str:
     cleaned = raw_header.strip().lower()
@@ -54,8 +73,13 @@ def normalize_resume_keys(data: dict) -> dict:
         new_key = normalize_header(key)
 
         if isinstance(value, dict):
-            normalized[new_key] = normalize_resume_keys(value)
+            normalized_value = normalize_resume_keys(value)
         else:
-            normalized[new_key] = value
+            normalized_value = value
+
+        if new_key in normalized:
+            normalized[new_key] = merge_section_values(normalized[new_key], normalized_value)
+        else:
+            normalized[new_key] = normalized_value
 
     return normalized

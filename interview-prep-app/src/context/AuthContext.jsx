@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
       setUser((prev) => {
         if (!prev) return prev 
         const updated = { ...prev, has_password: true }
-        setSession({ user:update })
+        setSession({ user: updated })
         return updated
       })
       return result

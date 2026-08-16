@@ -1,1 +1,1 @@
-const [analysis, setAnalysis] = useState(null)
+export const resumeInsights = []

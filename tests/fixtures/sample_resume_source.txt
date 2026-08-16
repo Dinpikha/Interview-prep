@@ -1,0 +1,29 @@
+# Profile Summary
+Backend-focused student developer building FastAPI, React, and AI tooling.
+
+# Education
+B.Tech in Computer Science, Example Institute, 2021-2025
+
+# Work Experience
+Backend Intern, Acme Labs, Jan 2024 - Jun 2024
+Built FastAPI endpoints and wrote SQL queries for internal tools.
+
+Software Intern, Beta Systems, Jul 2023 - Dec 2023
+Implemented React dashboards and integrated REST APIs.
+
+# Personal Projects
+Interview Prep Platform
+Built an AI mentor and resume analyzer using React, FastAPI, Groq, and Supabase.
+
+# Academic Projects
+Library Tracker
+Created a Python and PostgreSQL application for tracking issued books.
+
+# Technical Skills
+Python, FastAPI, React, SQL, Supabase, Git
+
+# Awards
+Winner, Campus Hackathon, 2024
+
+# Certifications
+Python Basics Certificate

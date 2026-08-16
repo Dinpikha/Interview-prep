@@ -30,6 +30,7 @@ sentence-transformers
 
 scikit-learn 
 pytest
+pytest-cov
 # transformers
 # torch
 # datasets

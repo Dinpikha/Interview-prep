@@ -44,6 +44,11 @@ Thumbs.db
 # ==========================
 .pytest_cache/
 .cache/
+.coverage
+htmlcov/
+coverage/
+playwright-report/
+test-results/
 
 # ==========================
 # Jupyter
