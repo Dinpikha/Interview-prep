@@ -273,8 +273,8 @@ export default function InterviewSession({ interview, onExit }) {
 
   if (loading && !summary && !questions.length) {
     return (
-      <div className="mx-auto max-w-3xl">
-        <Card>
+      <div className="mx-auto max-w-4xl">
+        <Card className="workspace-card">
           <CardContent className="flex items-center gap-3 pt-6 text-muted">
             <Loader2 className="h-5 w-5 animate-spin" />
             Generating fresh interview questions...
@@ -286,16 +286,16 @@ export default function InterviewSession({ interview, onExit }) {
 
   if (summary) {
     return (
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6">
         <Button variant="ghost" size="sm" onClick={onExit}>
           <ArrowLeft className="h-4 w-4" />
           Back to interviews
         </Button>
 
-        <Card>
+        <Card className="workspace-card">
           <CardContent className="space-y-4 pt-6">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-success/10 text-success">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-success/10 text-success">
                 <Trophy className="h-5 w-5" />
               </span>
               <div>
@@ -335,8 +335,9 @@ export default function InterviewSession({ interview, onExit }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-6 rounded-3xl border border-border bg-card/85 p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Button variant="ghost" size="sm" onClick={onExit}>
             <ArrowLeft className="h-4 w-4" />
@@ -352,12 +353,13 @@ export default function InterviewSession({ interview, onExit }) {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border bg-card px-4 py-2 text-center">
+        <div className="rounded-2xl border border-border bg-secondary/50 px-4 py-2 text-center">
           <p className="flex items-center justify-center gap-1 text-xs text-muted">
             <Clock className="h-3.5 w-3.5" />
             Question time
           </p>
           <p className="text-lg font-semibold tabular-nums text-foreground">{formatStopwatch(elapsedSeconds)}</p>
+        </div>
         </div>
       </div>
 
@@ -395,7 +397,7 @@ export default function InterviewSession({ interview, onExit }) {
           exit={{ opacity: 0, x: -16 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
         >
-          <Card className="mb-6">
+          <Card className="workspace-card mb-6">
             <CardHeader>
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
@@ -470,7 +472,7 @@ export default function InterviewSession({ interview, onExit }) {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="space-y-3 rounded-lg border border-border bg-background p-4"
+                  className="space-y-3 rounded-2xl border border-border bg-secondary/30 p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-medium text-foreground">Feedback</p>

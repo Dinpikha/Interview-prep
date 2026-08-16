@@ -10,7 +10,6 @@ import {
   Flame,
   Info,
   ShieldCheck,
-  FileCheck2,
   GraduationCap,
   FolderGit2,
   Wrench,
@@ -31,7 +30,7 @@ const IMPACT_CONFIG = {
   low: { icon: Info, border: 'border-l-primary', badge: 'primary' },
 }
 
-function ScoreRing({ score }) {
+function ScoreRing({ score, inverse = false }) {
   const pct = Math.max(0, Math.min(100, score ?? 0))
   const radius = 42
   const circumference = 2 * Math.PI * radius
@@ -61,8 +60,8 @@ function ScoreRing({ score }) {
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-3xl font-bold leading-none text-foreground">{score ?? '–'}</span>
-        <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        <span className={inverse ? 'text-3xl font-bold leading-none text-white' : 'text-3xl font-bold leading-none text-foreground'}>{score ?? '–'}</span>
+        <span className={inverse ? 'mt-1 text-[10px] font-medium uppercase tracking-wider text-white/60' : 'mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground'}>
           out of 100
         </span>
       </div>
@@ -120,11 +119,13 @@ function TagList({ items, tone }) {
   )
 }
 
-function SectionCard({ title, score, summary, positives, negatives, negativesLabel }) {
-  if (score == null && !summary && !positives?.length && !negatives?.length) return null
+function SectionCard({ title, score, summary, positives, negatives, negativesLabel, suggestions }) {
+  if (score == null && !summary && !positives?.length && !negatives?.length && !suggestions?.length) {
+    return null
+  }
 
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+    <div className="space-y-3 rounded-xl border-l-4 border-l-primary bg-secondary/28 p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-foreground">{title}</p>
         {typeof score === 'number' && <span className="text-sm font-semibold text-foreground">{score}</span>}
@@ -151,7 +152,250 @@ function SectionCard({ title, score, summary, positives, negatives, negativesLab
           <TagList items={negatives} tone="negative" />
         </div>
       )}
+
+      {suggestions?.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Suggestions
+          </p>
+          <ul className="space-y-1.5">
+            {suggestions.map((item, i) => (
+              <li key={i} className="text-xs leading-relaxed text-foreground">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
+  )
+}
+
+const SECTION_LABELS = {
+  summary: 'Professional Summary',
+  education: 'Education',
+  experience: 'Work Experience',
+  projects: 'Projects',
+  skills: 'Skills',
+  achievements: 'Achievements',
+}
+
+function MissingSectionCard({ title, feedback, suggestions }) {
+  return (
+    <div className="space-y-3 rounded-xl border border-dashed border-border bg-card/70 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <Badge>Not found</Badge>
+      </div>
+      {feedback && <p className="text-xs leading-relaxed text-muted">{feedback}</p>}
+      {suggestions?.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Suggestions
+          </p>
+          <ul className="space-y-1.5">
+            {suggestions.map((item, i) => (
+              <li key={i} className="text-xs leading-relaxed text-foreground">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SuggestedRewrite({ rewrite }) {
+  if (!rewrite) return null
+  return (
+    <div className="rounded-md border border-primary/20 bg-primary/5 p-3">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-primary">
+        Suggested rewrite
+      </p>
+      <p className="mt-1 text-xs leading-relaxed text-foreground">{rewrite}</p>
+    </div>
+  )
+}
+
+function SectionBreakdownCard({ breakdown }) {
+  const entries = Object.keys(SECTION_LABELS)
+    .map((key) => [key, breakdown?.[key]])
+    .filter(([, section]) => section)
+
+  if (!entries.length) return null
+
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold text-foreground">Section Breakdown</h2>
+        <p className="mt-1 text-sm text-muted">
+          Section-by-section feedback based on what the resume includes and what it is missing.
+        </p>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {entries.map(([key, section]) => {
+          if (section.present === false) {
+            return (
+              <MissingSectionCard
+                key={key}
+                title={SECTION_LABELS[key]}
+                feedback={section.feedback}
+                suggestions={section.suggestions}
+              />
+            )
+          }
+
+          return (
+            <div key={key} className="space-y-3">
+              <SectionCard
+                title={SECTION_LABELS[key]}
+                score={section.score}
+                summary={section.feedback}
+                positives={section.strengths}
+                negatives={section.weaknesses}
+                negativesLabel="Areas to improve"
+                suggestions={section.suggestions}
+              />
+              {key === 'summary' && <SuggestedRewrite rewrite={section.improved_rewrite} />}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function ReportOverview({ title, score, secondaryScores = [], review, badge }) {
+  return (
+    <section className="rounded-3xl bg-primary p-5 text-primary-foreground shadow-xl shadow-primary/10 sm:p-6">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+        <ScoreRing score={score} inverse />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl font-semibold text-white">{title}</h2>
+            {badge}
+          </div>
+          {review && <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/78">{review}</p>}
+        </div>
+      </div>
+
+      {secondaryScores.length > 0 && (
+        <div className="mt-6 grid gap-4 border-t border-white/15 pt-5 sm:grid-cols-3">
+          {secondaryScores.map(({ label, score: itemScore }) => (
+            <div key={label} className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-white/70">{label}</span>
+                <span className="text-xs font-semibold text-white">{itemScore}</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+                <div
+                  className="h-full rounded-full bg-accent transition-all duration-700"
+                  style={{ width: `${Math.max(0, Math.min(100, itemScore ?? 0))}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function ConnectedListSection({ strengths = [], weaknesses = [] }) {
+  if (!strengths.length && !weaknesses.length) return null
+
+  return (
+    <section className="grid gap-8 rounded-3xl bg-card/70 p-5 sm:p-6 md:grid-cols-2 md:divide-x md:divide-border">
+      <div className="space-y-3">
+        <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <CheckCircle2 className="h-4 w-4 text-success" />
+          Strengths
+        </p>
+        <ul className="space-y-3">
+          {strengths.map((item, i) => (
+            <li key={i} className="border-l-2 border-success/40 pl-3 text-sm leading-relaxed text-foreground">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="space-y-3 md:pl-8">
+        <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <XCircle className="h-4 w-4 text-danger" />
+          Areas to Improve
+        </p>
+        <ul className="space-y-3">
+          {weaknesses.map((item, i) => (
+            <li key={i} className="border-l-2 border-danger/35 pl-3 text-sm leading-relaxed text-foreground">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
+function SkillMatchSection({ matching = [], missing = [] }) {
+  if (!matching.length && !missing.length) return null
+
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold text-foreground">Skills Match</h2>
+        <p className="mt-1 text-sm text-muted">Skills detected against the target role.</p>
+      </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Matching skills</p>
+          <TagList items={matching} tone="positive" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Missing skills</p>
+          <TagList items={missing} tone="negative" />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function RecommendationTimeline({ items = [] }) {
+  if (!items.length) return null
+
+  return (
+    <section className="space-y-4">
+      <div className="flex items-center gap-2">
+        <ListChecks className="h-4 w-4 text-accent" />
+        <h2 className="text-xl font-semibold text-foreground">Recommendations</h2>
+      </div>
+      <ol className="space-y-4">
+        {items.map((item, i) => (
+          <li key={i} className="grid gap-3 sm:grid-cols-[3rem_1fr]">
+            <span className="text-lg font-semibold tabular-nums text-accent">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <p className="border-l border-border pl-4 text-sm leading-relaxed text-foreground">{item}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+function RawParsedDataDisclosure({ structured }) {
+  if (!structured) return null
+
+  return (
+    <details className="rounded-lg border border-border bg-background">
+      <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-muted">
+        View raw parsed data
+      </summary>
+      <div className="border-t border-border p-4">
+        <ParsedResumeBreakdown structured={structured} />
+      </div>
+    </details>
   )
 }
 
@@ -199,6 +443,20 @@ function FieldList({ items }) {
   )
 }
 
+function BulletList({ items }) {
+  if (!items?.length) return null
+
+  return (
+    <ul className="space-y-2">
+      {items.map((item, i) => (
+        <li key={i} className="text-sm leading-relaxed text-foreground">
+          {item}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function ParsedResumeSection({ icon: Icon, title, children }) {
   if (!children) return null
 
@@ -219,6 +477,7 @@ function ParsedResumeBreakdown({ structured }) {
   if (!structured) return null
 
   const education = structured.education
+  const educationEntries = Array.isArray(education) ? education : education ? [education] : []
   const projects = structured.projects?.projects || []
   const skillSets = structured.skills?.skill_sets || []
   const achievements = structured.achievements?.achievements || []
@@ -226,7 +485,15 @@ function ParsedResumeBreakdown({ structured }) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <ParsedResumeSection icon={GraduationCap} title="Education">
-        {education ? <FieldList items={education} /> : <p className="text-sm text-muted">No education section detected.</p>}
+        {educationEntries.length > 0 ? (
+          <div className="space-y-3">
+            {educationEntries.map((entry, index) => (
+              <FieldList key={`${entry.institution || 'education'}-${index}`} items={entry} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted">No education section detected.</p>
+        )}
       </ParsedResumeSection>
 
       <ParsedResumeSection icon={Wrench} title="Skills">
@@ -303,42 +570,78 @@ export default function AnalysisResults({ hasResults, analysis }) {
     )
   }
 
-  if (analysis.analysis === null && analysis.similarity_score === null) {
+  if (analysis.analysis === null) {
+    return (
+      <EmptyState
+        icon={AlertTriangle}
+        title="Analysis failed"
+        description={analysis.errors?.[0] || 'Something went wrong while analyzing your resume. Please try again.'}
+      />
+    )
+  }
+
+  if (analysis.analysis_type === 'summary') {
     const structured = analysis.resume?.structured
-    const parsedSections = Object.values(structured || {}).filter(Boolean).length
+    const summary = analysis.analysis
 
     return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-start">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success">
-              <FileCheck2 className="h-5 w-5" />
-            </span>
-            <div className="min-w-0 space-y-2">
-              <h2 className="text-lg font-semibold text-foreground">
-                Resume parsed — add a job description to get a match score
-              </h2>
-              <p className="text-sm leading-relaxed text-muted">
-                Your PDF was parsed successfully. Add a job description and run the analyzer again to
-                compare skills, gaps, and role fit.
-              </p>
-              {parsedSections > 0 && (
-                <Badge variant="success">
-                  {parsedSections} {parsedSections === 1 ? 'section' : 'sections'} detected
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="mx-auto max-w-5xl space-y-8">
+        <ReportOverview
+          title="Resume Quality"
+          score={summary.overall_score}
+          review={summary.overall_review}
+          badge={summary.experience_level && <Badge variant="accent">{summary.experience_level}</Badge>}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Extracted Resume Details</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <ParsedResumeBreakdown structured={structured} />
-          </CardContent>
-        </Card>
+        <SectionBreakdownCard breakdown={summary?.section_breakdown} />
+
+        {summary && (
+          <section className="space-y-5">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Key Summary</h2>
+              <p className="mt-1 text-sm text-muted">Highlights and gaps from the resume-only review.</p>
+            </div>
+              {summary.key_skills?.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Key skills
+                  </p>
+                  <TagList items={summary.key_skills} tone="positive" />
+                </div>
+              )}
+
+              <div className="grid gap-6 sm:grid-cols-3">
+                {summary.notable_strengths?.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Notable strengths
+                    </p>
+                    <BulletList items={summary.notable_strengths} />
+                  </div>
+                )}
+
+                {summary.potential_gaps?.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Potential gaps
+                    </p>
+                    <BulletList items={summary.potential_gaps} />
+                  </div>
+                )}
+
+                {summary.resume_quality_notes?.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Resume quality notes
+                    </p>
+                    <BulletList items={summary.resume_quality_notes} />
+                  </div>
+                )}
+              </div>
+          </section>
+        )}
+
+        <RawParsedDataDisclosure structured={structured} />
       </div>
     )
   }
@@ -351,109 +654,33 @@ export default function AnalysisResults({ hasResults, analysis }) {
         : null
 
     return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="space-y-6 pt-6">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-              <ScoreRing score={fit.match_score} />
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-semibold text-foreground">{fit.recommendation}</h2>
-                  {similarityScore !== null && (
-                    <Badge variant={tier(similarityScore)}>Similarity {similarityScore}%</Badge>
-                  )}
-                </div>
-                <p className="text-sm leading-relaxed text-muted">{fit.experience_relevance}</p>
-              </div>
-            </div>
+      <div className="mx-auto max-w-5xl space-y-8">
+        <ReportOverview
+          title={fit.recommendation || 'Fit Analysis'}
+          score={fit.overall_score}
+          review={fit.overall_review || fit.experience_relevance}
+          badge={similarityScore !== null && <Badge variant={tier(similarityScore)}>Similarity {similarityScore}%</Badge>}
+          secondaryScores={[
+            { label: 'Overall Score', score: fit.overall_score },
+            { label: 'Match Score', score: fit.match_score },
+            ...(similarityScore !== null ? [{ label: 'Vector Similarity', score: similarityScore }] : []),
+          ]}
+        />
 
-            <div className="grid gap-4 border-t border-border pt-5 sm:grid-cols-2">
-              <QuickScore label="Match Score" score={fit.match_score} />
-              {similarityScore !== null && (
-                <QuickScore label="Vector Similarity" score={similarityScore} />
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <SectionBreakdownCard breakdown={fit.section_breakdown} />
 
-        {(fit.strengths?.length > 0 || fit.weaknesses?.length > 0) && (
-          <Card>
-            <CardContent className="grid gap-6 pt-6 sm:grid-cols-2 sm:divide-x sm:divide-border">
-              {fit.strengths?.length > 0 && (
-                <div className="space-y-2.5">
-                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                    Strengths
-                  </p>
-                  <ul className="space-y-2">
-                    {fit.strengths.map((item, i) => (
-                      <li key={i} className="text-sm leading-relaxed text-foreground">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {fit.weaknesses?.length > 0 && (
-                <div className="space-y-2.5 sm:pl-6">
-                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
-                    <XCircle className="h-3.5 w-3.5 text-danger" />
-                    Gaps
-                  </p>
-                  <ul className="space-y-2">
-                    {fit.weaknesses.map((item, i) => (
-                      <li key={i} className="text-sm leading-relaxed text-foreground">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {fit.experience_relevance && (
+          <section className="border-l-4 border-l-accent pl-4">
+            <h2 className="text-xl font-semibold text-foreground">Key Summary</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{fit.experience_relevance}</p>
+          </section>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Skill Match</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-5 pt-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Matching skills
-              </p>
-              <TagList items={fit.matching_skills} tone="positive" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Missing skills
-              </p>
-              <TagList items={fit.missing_skills} tone="negative" />
-            </div>
-          </CardContent>
-        </Card>
+        <SkillMatchSection matching={fit.matching_skills} missing={fit.missing_skills} />
 
-        {fit.improvement_suggestions?.length > 0 && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <ListChecks className="h-4 w-4 text-primary" />
-                <CardTitle>Priority Improvements</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-4">
-              {fit.improvement_suggestions.map((item, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg border border-border border-l-4 border-l-primary bg-background p-4 text-sm leading-relaxed text-foreground"
-                >
-                  {item}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+        <ConnectedListSection strengths={fit.strengths} weaknesses={fit.weaknesses} />
+
+        <RecommendationTimeline items={fit.improvement_suggestions} />
       </div>
     )
   }

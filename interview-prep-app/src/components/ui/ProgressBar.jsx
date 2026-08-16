@@ -12,7 +12,7 @@ export default function ProgressBar({ value, max = 100, label, showValue = true,
         </div>
       )}
       <div
-        className="h-2 w-full overflow-hidden rounded-full bg-secondary"
+        className="h-2.5 w-full overflow-hidden rounded-full bg-secondary"
         role="progressbar"
         aria-valuenow={value}
         aria-valuemin={0}
@@ -20,7 +20,7 @@ export default function ProgressBar({ value, max = 100, label, showValue = true,
         aria-label={label}
       >
         <div
-          className="h-full rounded-full bg-primary transition-all duration-300"
+          className="h-full rounded-full bg-accent transition-all duration-700 ease-out"
           style={{ width: `${percentage}%` }}
         />
       </div>

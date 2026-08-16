@@ -6,7 +6,7 @@ export default function WebSearchToggle({ enabled, onToggle, disabled }) {
     <Button
       type="button"
       variant={enabled ? 'primary' : 'outline'}
-      size="lg"
+      size="md"
       disabled={disabled}
       onClick={() => onToggle(!enabled)}
       aria-pressed={enabled}

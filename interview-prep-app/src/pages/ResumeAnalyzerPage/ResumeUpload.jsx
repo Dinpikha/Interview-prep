@@ -1,5 +1,5 @@
 import { FileText, Upload, X } from 'lucide-react'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '../../components/ui'
+import { Button } from '../../components/ui'
 
 export default function ResumeUpload({
   selectedFile,
@@ -13,18 +13,17 @@ export default function ResumeUpload({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Upload Resume</CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-6 pt-4">
+    <section className="space-y-5">
+      <div>
+        <h2 className="text-base font-semibold text-foreground">Resume</h2>
+        <p className="mt-1 text-sm text-muted">Upload the PDF you want to evaluate.</p>
+      </div>
         <div className="space-y-3">
           <label
             htmlFor="resume-file"
-            className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-border bg-background px-6 py-10 text-center transition-colors hover:border-primary/50 hover:bg-secondary/30"
+            className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-border bg-card/70 px-6 py-10 text-center transition-all hover:-translate-y-0.5 hover:border-accent/60 hover:bg-white"
           >
-            <Upload className="mb-2 h-8 w-8 text-muted" />
+            <Upload className="mb-2 h-8 w-8 text-accent" />
             <p className="text-sm font-medium text-foreground">
               Drop your resume here or click to browse
             </p>
@@ -40,7 +39,7 @@ export default function ResumeUpload({
           </label>
 
           {selectedFile && (
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/50 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-secondary/50 px-4 py-3">
               <FileText className="h-5 w-5 shrink-0 text-primary" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-foreground">
@@ -62,13 +61,12 @@ export default function ResumeUpload({
         </div>
 
         <Button
-          className="w-full"
+          className="w-full sm:w-auto"
           onClick={onAnalyze}
           disabled={isAnalyzing || !selectedFile}
         >
           {isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
         </Button>
-      </CardContent>
-    </Card>
+    </section>
   )
 }

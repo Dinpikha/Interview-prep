@@ -17,10 +17,11 @@ export default function MockInterviewPage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Mock Interviews"
-        description="Choose an interview type and practice with realistic, timed question sessions."
+        description="Choose a focus area and practice with realistic, timed question sessions."
+        className="rounded-3xl border border-border bg-card/80 p-6 shadow-sm"
       />
 
       <InterviewList

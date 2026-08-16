@@ -1,136 +1,169 @@
+# Interview Prep
+
+AI-powered interview preparation workspace with an AI mentor, resume intelligence, mock interviews, authentication, and progress-oriented frontend experiences.
+
 <p align="center">
   <img src="interview-prep-app/src/assets/Title_image.jpeg" alt="Interview Prep logo" width="120" />
 </p>
 
-# Interview Prep
-
-![status](https://img.shields.io/badge/status-active--development-6366F1?style=for-the-badge)
-![python](https://img.shields.io/badge/python-1F2937?style=for-the-badge)
-![react](https://img.shields.io/badge/react-1F2937?style=for-the-badge)
-![license](https://img.shields.io/badge/license-MIT-1F2937?style=for-the-badge)
-
-This project is under active development. Core modules (AI Mentor, Resume Analyzer, Authentication) are working; others are in progress — see [Status](#status) below.
-
-An AI-powered interview preparation platform combining a local/cloud LLM mentor, resume analysis, and mock interviews into one application.
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Status](#status)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
-![](https://img.shields.io/badge/overview-6366F1?style=for-the-badge)
 ## Overview
 
-Interview Prep helps candidates practice for technical interviews through an AI mentor, resume scoring, and (soon) simulated mock interviews — rather than a static bank of questions. The backend is modular: separate services for AI inference, authentication, and resume analysis, all backed by Supabase.
+Interview Prep helps candidates prepare for technical interviews in one place. The React frontend provides the workspace for Home, AI Mentor, Resume Analyzer, and Mock Interview flows. The FastAPI backend handles authentication, Supabase persistence, Groq-powered AI responses, PDF resume extraction, structured resume analysis, embeddings, and mock-interview scoring.
 
----
+## Key Features
 
-![](https://img.shields.io/badge/status-6366F1?style=for-the-badge)
-## Status
+| Area | What it does |
+| --- | --- |
+| AI Mentor | Maintains chat sessions and provides personalized interview guidance using stored user context. |
+| Resume Analyzer | Extracts a PDF resume, structures sections, scores resume quality, and optionally compares it to a job description. |
+| Mock Interview | Generates interview questions, scores answers, supports skips/completion, and can transcribe audio answers. |
+| Authentication | Supports local email/password auth, JWT access tokens, refresh tokens, password reset, and GitHub OAuth. |
+| Home Workspace | Summarizes preparation progress and routes users toward the next useful action when data exists. |
 
-| Feature | Status |
-|---|---|
-| AI Mentor (Groq + local LLM via LM Studio) | ![working](https://img.shields.io/badge/-working-10B981) |
-| Resume Analyzer (ATS checks + scoring) | ![working](https://img.shields.io/badge/-working-10B981) |
-| Authentication (email/password + GitHub OAuth) | ![working](https://img.shields.io/badge/-working-10B981) |
-| Supabase database (schema + summaries) | ![working](https://img.shields.io/badge/-working-10B981) |
-| Mock Interview simulator | ![in progress](https://img.shields.io/badge/-in%20progress-6B7280) |
-| Dashboard & analytics | ![planned](https://img.shields.io/badge/-planned-6B7280) |
-| Progress tracking | ![planned](https://img.shields.io/badge/-planned-6B7280) |
-
----
-
-![](https://img.shields.io/badge/architecture-6366F1?style=for-the-badge)
 ## Architecture
 
 ```mermaid
-graph TD
-    User(("User")) --> Frontend["React + Vite Frontend"]
-    Frontend -->|"REST API"| Backend["FastAPI Backend\nbackend_fetch.py"]
+flowchart TD
+    Frontend["React + Vite frontend"] --> API["FastAPI backend<br/>backend/backend_fetch.py"]
 
-    subgraph Modules["backend/"]
-        Backend --> AI["ai/\ngroq_client, local_client\nmodel, prompts"]
-        Backend --> AuthMod["auth/\ngithub_oauth, security, deps"]
-        Backend --> API["api_file/\nroutes"]
-        Backend --> Mentor["ai_mentor_backend/"]
-        Backend --> Resume["resume_analyzer_backend/\nparser, checks, scoring"]
-        Backend --> Mock["mock_interview/\naptitude, coding, hr, tech..."]
-    end
+    API --> Auth["Authentication<br/>backend/auth + api_file/auth_route_api_file.py"]
+    API --> Mentor["AI Mentor<br/>backend/ai_mentor_backend"]
+    API --> Resume["Resume Analyzer<br/>backend/resume_analyzer_backend"]
+    API --> Mock["Mock Interview<br/>backend/api_file/mock_interview_api_file.py"]
+    API --> DB[("Supabase")]
 
-    AI --> DB[("Supabase\nPostgres")]
-    AuthMod --> DB
-    Mentor --> DB
-    Resume --> DB
-
-    DB --> Tables["users · oauth_accounts · sessions\nrefresh_tokens · messages\nuser_memory · resume · metrics"]
+    Mentor --> Groq["Groq LLM"]
+    Resume --> Groq
+    Mock --> Groq
+    Resume --> Embeddings["all-MiniLM-L6-v2 embeddings"]
 ```
 
-The `ai/` module supports two interchangeable clients — a hosted Groq client and a local client via LM Studio — so inference can run cloud-side or fully offline.
+LLM responses that feed application logic are parsed through Pydantic schemas, so downstream code receives validated structured data instead of arbitrary prose. The resume analyzer keeps both structured data and extracted source evidence available during scoring to reduce information loss.
 
----
-
-![](https://img.shields.io/badge/tech%20stack-6366F1?style=for-the-badge)
 ## Tech Stack
 
 | Layer | Tools |
-|---|---|
-| Frontend | React, Tailwind CSS |
-| Backend | FastAPI, Python |
-| Database | Supabase (Postgres) |
-| AI | Groq API, Local LLMs (LM Studio) |
-| Auth | GitHub OAuth, session + refresh tokens |
+| --- | --- |
+| Frontend | React 19, Vite, Tailwind CSS, lucide-react, Recharts |
+| Backend | FastAPI, Pydantic, LangChain output parsers |
+| AI | Groq chat + Whisper transcription, optional LM Studio local client |
+| Resume Processing | PyMuPDF, pymupdf4llm, sentence-transformers, scikit-learn |
+| Data/Auth | Supabase, JWT, GitHub OAuth |
+| Tests | pytest |
 
----
+## Project Structure
 
-![](https://img.shields.io/badge/getting%20started-6366F1?style=for-the-badge)
-## Getting Started
+```text
+.
+├── backend/
+│   ├── ai/                         # Groq, transcription, and local model clients
+│   ├── ai_mentor_backend/          # Mentor prompt flow, memory, web search helpers
+│   ├── api_file/                   # Route-facing service functions
+│   ├── auth/                       # JWT, password, and GitHub OAuth helpers
+│   ├── resume_analyzer_backend/    # Resume extraction, parsing, scoring pipeline
+│   ├── backend_fetch.py            # FastAPI application and route definitions
+│   └── requirements.txt
+├── Database/                       # Supabase schema and database helpers
+├── interview-prep-app/             # React/Vite frontend
+├── tests/                          # Focused backend tests
+├── .env.example
+└── README.md
+```
+
+## Resume Analyzer Pipeline
+
+The analyzer has two modes.
+
+### Resume Quality Mode
+
+Used when no job description is supplied.
+
+```text
+PDF resume
+→ markdown/text extraction with sanitized contact fields
+→ section/header normalization
+→ per-section Pydantic structuring
+→ preserved source evidence + normalized structured text
+→ resume quality analysis
+→ Resume Score, overall review, section breakdown, strengths, gaps, and recommendations
+```
+
+The scoring prompt is instructed to use only resume evidence. It may suggest adding measurable results when the candidate has evidence for them, but it must not invent percentages, dates, technologies, achievements, or impact metrics.
+
+### Job Match Mode
+
+Used when a job description is supplied.
+
+```text
+Resume + JD
+→ structured resume parsing
+→ structured JD parsing
+→ all-MiniLM-L6-v2 embeddings
+→ cosine similarity as one signal
+→ LLM role-fit comparison
+→ backend blended overall score + match score, skills, gaps, and recommendations
+```
+
+The final JD score keeps semantic similarity separate from the LLM's match judgment. The backend computes:
+
+```text
+overall_score = round(0.4 * similarity_score * 100 + 0.6 * match_score)
+```
+
+Required JD skills are passed separately from responsibilities and qualifications so must-have gaps are weighted more clearly.
+
+## AI Mentor Flow
+
+The frontend sends mentor prompts to `/ai_mentor` with the user/session context. The backend retrieves prior summary and conversation context, gets a Groq response, stores messages, and updates the user's long-term preparation summary. Optional web search is routed through the existing mentor backend helpers when enabled.
+
+## Authentication
+
+Authentication lives in `backend/auth` and route-facing helpers in `backend/api_file/auth_route_api_file.py`.
+
+- Local signup/login uses password hashing via `passlib`.
+- Access tokens are JWTs signed with `JWT_SECRET`.
+- Refresh/reset tokens are opaque random tokens stored as hashes.
+- GitHub OAuth uses the authorization-code flow; the backend exchanges the code for a GitHub token so the client secret is never exposed to the frontend.
+
+## Local Setup
 
 ### Prerequisites
+
 - Python 3.11+
 - Node.js 18+
-- A Supabase project (URL + anon/service key)
-- A Groq API key, and/or LM Studio running locally for offline inference
+- Supabase project URL and key
+- Groq API key
+- Optional: GitHub OAuth app for GitHub login
+- Optional: Tavily key for mentor web search
 
-### Clone
+### Environment Variables
+
+Create a root `.env` from the example:
 
 ```bash
-git clone https://github.com/Dinpikha/Interview-prep.git
-cd Interview-prep
+cp .env.example .env
 ```
 
-### Backend
+Create a frontend env file:
 
 ```bash
-python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+cp interview-prep-app/.env.example interview-prep-app/.env
+```
+
+Fill in placeholders only. Do not commit real `.env` files.
+
+### Run Backend
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r backend/requirements.txt
-```
-
-Create a `.env` file in `backend/`:
-
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
-GROQ_API_KEY=your_groq_api_key
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-```
-
-```bash
 uvicorn backend.backend_fetch:app --reload
 ```
 
-### Frontend
+FastAPI starts at `http://localhost:8000`.
+
+### Run Frontend
 
 ```bash
 cd interview-prep-app
@@ -138,81 +171,37 @@ npm install
 npm run dev
 ```
 
-> Confirm the exact `.env` variable names once the config is finalized — these are placeholders based on the current module layout.
+Vite starts at `http://localhost:5173` by default.
 
----
+### Run Tests
 
-![](https://img.shields.io/badge/project%20structure-6366F1?style=for-the-badge)
-## Project Structure
-
-```
-.
-├── backend
-│   ├── ai
-│   │   ├── groq_client.py
-│   │   ├── local_client.py
-│   │   ├── model.py
-│   │   └── prompts.py
-│   ├── ai_mentor_backend
-│   │   ├── check_if_related.py
-│   │   ├── connecting_files_logic.py
-│   │   ├── generate_new_summary.py
-│   │   ├── get_embeddings.py
-│   │   └── get_response_from_model.py
-│   ├── api_file
-│   │   ├── auth_route_api_file.py
-│   │   ├── create_session_api_file.py
-│   │   ├── delete_user_api_file.py
-│   │   ├── model_response_api_file.py
-│   │   ├── resume_analyzer_api_file.py
-│   │   └── return_summary_api_file.py
-│   ├── auth
-│   │   ├── deps.py
-│   │   ├── github_oauth.py
-│   │   └── security.py
-│   ├── mock_interview
-│   │   ├── aptitude.py
-│   │   ├── coding.py
-│   │   ├── hr.py
-│   │   ├── resume_based.py
-│   │   ├── role_specific.py
-│   │   └── tech.py
-│   ├── resume_analyzer_backend
-│   │   ├── checks
-│   │   ├── parser
-│   │   └── scoring
-│   ├── backend_fetch.py
-│   └── requirements.txt
-├── Database
-│   ├── auth_schema.sql
-│   ├── create_database.sql
-│   └── db.py
-└── interview-prep-app
-    ├── src
-    │   ├── App.jsx
-    │   ├── main.jsx
-    │   ├── components
-    │   ├── pages
-    │   ├── routes
-    │   ├── context
-    │   ├── hooks
-    │   └── lib
-    ├── package.json
-    └── vite.config.js
+```bash
+python -m pytest tests/test_resume_analyzer_core.py -q
 ```
 
----
+## Important Endpoints
 
-![](https://img.shields.io/badge/contributing-6366F1?style=for-the-badge)
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/auth/signup` | Create local account |
+| `POST` | `/auth/login` | Login and receive tokens |
+| `POST` | `/auth/github` | Complete GitHub OAuth login |
+| `GET` | `/auth/me` | Return authenticated user |
+| `POST` | `/ai_mentor` | Send a mentor chat message |
+| `POST` | `/resume_analyzer` | Upload resume PDF and optional JD |
+| `POST` | `/dashboard` | Return dashboard/home data |
+| `POST` | `/mock_interview/start` | Start mock interview |
+| `POST` | `/mock_interview/answer` | Score one mock answer |
+| `POST` | `/mock_interview/complete` | Complete mock interview |
+| `POST` | `/mock_interview/transcribe` | Transcribe an audio answer |
+
+## Known Limitations
+
+- PDF extraction still depends on the PDF's internal text structure; multi-column and text-box resumes can produce a different order than the visual layout.
+- The resume analyzer now preserves source evidence for scoring, but truly image-only PDFs still require OCR support before they can be analyzed well.
+- LLM JSON repair retries are intentionally limited to one retry to keep failures deterministic.
+- There is no license file in the repository at the moment.
+
 ## Contributing
 
-This is a solo project in early, active development. Issues and pull requests are welcome once the core is more stable — feel free to open one for bugs or ideas in the meantime.
-
----
-
-![](https://img.shields.io/badge/license-6366F1?style=for-the-badge)
-## License
-
-MIT — see [LICENSE](LICENSE) for details.
-
-Built by **Dipika Choudhary** · [LinkedIn](https://www.linkedin.com/in/dipika-choudhary-) · [GitHub](https://github.com/Dinpikha)
+This is an active personal project. Keep changes focused, avoid committing secrets, and run the relevant frontend/backend validation before opening a PR.

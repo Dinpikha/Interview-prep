@@ -3,7 +3,6 @@ import {
   Bot,
   FileText,
   Home,
-  LayoutDashboard,
   Mic,
   X,
 } from 'lucide-react'
@@ -15,7 +14,6 @@ const navIcons = {
   'Mock Interview': Mic,
   'Resume Analyzer': FileText,
   'AI Mentor': Bot,
-  Dashboard: LayoutDashboard,
 }
 
 export default function Sidebar({ isOpen, onClose, className }) {
@@ -32,7 +30,7 @@ export default function Sidebar({ isOpen, onClose, className }) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card pt-16 transition-transform duration-200 md:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border/80 bg-card/95 pt-16 shadow-xl shadow-primary/5 backdrop-blur-xl transition-transform duration-200 md:hidden',
           isOpen ? 'translate-x-0' : '-translate-x-full',
           className,
         )}
@@ -42,14 +40,20 @@ export default function Sidebar({ isOpen, onClose, className }) {
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-secondary hover:text-foreground"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-secondary hover:text-foreground"
             aria-label="Close sidebar"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
+        <div className="px-5 pb-3 pt-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Workspace
+          </p>
+        </div>
+
+        <nav className="flex flex-1 flex-col gap-1.5 px-3 py-1">
           {mainNavItems.map(({ label, path }) => {
             const Icon = navIcons[label] ?? Home
 
@@ -60,22 +64,24 @@ export default function Sidebar({ isOpen, onClose, className }) {
                 onClick={onClose}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    'group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-primary/15 text-primary'
+                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/15'
                       : 'text-muted hover:bg-secondary hover:text-foreground',
                   )
                 }
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon className="h-[18px] w-[18px] shrink-0 transition-transform group-hover:scale-105" />
                 {label}
               </NavLink>
             )
           })}
         </nav>
 
-        <div className="border-t border-border p-4">
-          <p className="text-xs text-muted-foreground">Interview Prep with ease</p>
+        <div className="space-y-3 border-t border-border p-4">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Personal interview prep, guided by your progress.
+          </p>
         </div>
       </aside>
     </>

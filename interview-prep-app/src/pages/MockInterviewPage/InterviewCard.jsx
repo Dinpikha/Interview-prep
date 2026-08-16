@@ -17,10 +17,10 @@ export default function InterviewCard({ interview, onStart }) {
 
   return (
     <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.16 }}>
-      <Card className="flex h-full flex-col transition-colors hover:border-primary/30">
+      <Card className="subtle-lift flex h-full flex-col transition-colors hover:border-primary/30">
         <CardHeader className="gap-4">
           <div className="flex items-start justify-between gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
               {Icon && <Icon className="h-5 w-5" />}
             </span>
             <Badge variant={statusVariant[interview.status]}>

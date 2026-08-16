@@ -28,7 +28,7 @@ export default function ChatMessages({
   }, [onMessageAnimated, onResponseComplete])
 
   return (
-    <div className="flex-1 space-y-6 overflow-y-auto px-1 py-4">
+    <div className="flex-1 space-y-6 overflow-y-auto px-1 py-4 md:px-3">
       {messages.map((message) => (
         <ChatMessage
           key={message.id}
@@ -44,12 +44,12 @@ export default function ChatMessages({
       <AnimatePresence>
         {isTyping && !respondingMessageId && (
           <motion.div
-            className="flex min-h-8 gap-3"
+            className="mx-auto flex min-h-8 max-w-3xl gap-3"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-muted">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-muted shadow-sm">
               <span className="flex gap-1">
                 {[0, 1, 2].map((dot) => (
                   <motion.span

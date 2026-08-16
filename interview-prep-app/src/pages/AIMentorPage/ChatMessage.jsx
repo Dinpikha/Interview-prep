@@ -217,7 +217,7 @@ function MarkdownContent({ content }) {
 
           return (
             <div key={blockIndex} className="max-w-full overflow-x-auto rounded-lg border border-border">
-              <table className="w-full min-w-max border-collapse text-left text-xs">
+              <table className="w-full min-w-[36rem] border-collapse text-left text-xs">
                 <thead className="bg-secondary/80 text-foreground">
                   <tr>
                     {header.map((cell, cellIndex) => (
@@ -293,20 +293,25 @@ function ChatMessage({ message, shouldAnimate, onPartialChange, onAnimationCompl
   }, [cleanContent, count, displayedText, shouldAnimate, message.id, onAnimationComplete, onPartialChange])
 
   return (
-    <div className={cn('group flex gap-3', isUser && 'flex-row-reverse')}>
+    <motion.div
+      className={cn('group mx-auto flex w-full max-w-4xl min-w-0 gap-2 sm:gap-3', isUser && 'flex-row-reverse')}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.18 }}
+    >
       <span
         className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full shadow-sm ring-1 ring-border',
-          isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted',
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl shadow-sm ring-1 ring-border',
+          isUser ? 'bg-primary text-primary-foreground' : 'bg-accent/10 text-accent',
         )}
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
       </span>
 
-      <div className={cn('max-w-[86%] space-y-1', isUser && 'text-right')}>
+      <div className={cn('min-w-0 max-w-[calc(100%-3rem)] space-y-1.5 sm:max-w-[min(82%,760px)]', isUser && 'text-right')}>
         <div
           className={cn(
-            'inline-block rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm transition-shadow group-hover:shadow-md',
+            'inline-block max-w-full overflow-hidden rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm transition-shadow [overflow-wrap:anywhere] group-hover:shadow-md',
             isUser
               ? 'rounded-tr-md bg-primary text-primary-foreground'
               : message.tone === 'error'
@@ -342,7 +347,7 @@ function ChatMessage({ message, shouldAnimate, onPartialChange, onAnimationCompl
 
         <p className="text-xs text-muted-foreground">{message.timestamp}</p>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

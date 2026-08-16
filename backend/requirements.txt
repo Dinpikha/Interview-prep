@@ -29,6 +29,7 @@ langchain-core
 sentence-transformers
 
 scikit-learn 
+pytest
 # transformers
 # torch
 # datasets

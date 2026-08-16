@@ -75,66 +75,79 @@ export default function ResumeAnalyzerPage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Resume Analyzer"
-        description="Upload your resume and the job you're targeting to get instant feedback on structure, keywords, and impact."
+        description="Evaluate resume quality, role alignment, strengths, gaps, and concrete improvements."
+        className="rounded-3xl border border-border bg-card/80 p-6 shadow-sm"
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ResumeUpload
-          selectedFile={selectedFile}
-          onFileSelect={setSelectedFile}
-          onAnalyze={handleAnalyze}
-          isAnalyzing={isSubmitting}
-        />
+      <section className="workspace-card rounded-3xl border border-border bg-secondary/35 p-5 sm:p-6">
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-accent">Analysis setup</p>
+          <h2 className="mt-1 text-xl font-semibold text-foreground">Prepare your resume intelligence report</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+            Start with a resume-only review, or add a target role to compare skills, gaps, and fit.
+          </p>
+        </div>
 
-        <AnimatePresence mode="wait">
-          {showJobDescription ? (
-            <motion.div
-              key="job-description"
-              initial={{ opacity: 0, height: 0, y: -8 }}
-              animate={{ opacity: 1, height: 'auto', y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -8 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="overflow-hidden"
-            >
-              <JobDescription
-                value={jobDescription}
-                onChange={setJobDescription}
-                onRemove={() => {
-                  setJobDescription('')
-                  setShowJobDescription(false)
-                }}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="add-job-description"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              className="flex items-start"
-            >
-              <Button
-                variant="outline"
-                className="group h-auto w-full justify-start rounded-xl border-dashed px-5 py-4 text-left sm:w-auto"
-                onClick={() => setShowJobDescription(true)}
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
-                  <Plus className="h-4 w-4" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium">Add Job Description</span>
-                  <span className="block text-xs font-normal text-muted">
-                    Optional, but recommended for match scoring.
-                  </span>
-                </span>
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+        <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:divide-x lg:divide-border">
+          <ResumeUpload
+            selectedFile={selectedFile}
+            onFileSelect={setSelectedFile}
+            onAnalyze={handleAnalyze}
+            isAnalyzing={isSubmitting}
+          />
+
+          <div className="lg:pl-6">
+            <AnimatePresence mode="wait">
+              {showJobDescription ? (
+                <motion.div
+                  key="job-description"
+                  initial={{ opacity: 0, height: 0, y: -8 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className="overflow-hidden"
+                >
+                  <JobDescription
+                    value={jobDescription}
+                    onChange={setJobDescription}
+                    onRemove={() => {
+                      setJobDescription('')
+                      setShowJobDescription(false)
+                    }}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="add-job-description"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="flex h-full items-start"
+                >
+                  <Button
+                    variant="outline"
+                    className="group h-auto w-full justify-start rounded-2xl border-dashed bg-card/70 px-5 py-5 text-left"
+                    onClick={() => setShowJobDescription(true)}
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent transition-transform group-hover:scale-105">
+                      <Plus className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">Add Target Role</span>
+                      <span className="block text-xs font-normal text-muted">
+                        Optional, but recommended for match scoring.
+                      </span>
+                    </span>
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </section>
 
       <div className="mt-6">
         <AnimatePresence mode="wait">
@@ -144,7 +157,7 @@ export default function ResumeAnalyzerPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="rounded-xl border border-border bg-card p-6"
+              className="workspace-card rounded-2xl border border-border bg-card p-6"
             >
               <div className="flex items-start gap-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

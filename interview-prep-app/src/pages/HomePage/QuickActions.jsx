@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Bot, FileText, LayoutDashboard, Mic } from 'lucide-react'
+import { Bot, FileText, Mic } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { ROUTES } from '../../constants/routes'
 import { Card, CardDescription, CardHeader, CardTitle } from '../../components/ui'
@@ -29,14 +29,6 @@ const quickActions = [
     color: 'text-success',
     bg: 'bg-success/10',
   },
-  {
-    title: 'Dashboard',
-    description: 'View your progress, scores, and practice history.',
-    icon: LayoutDashboard,
-    path: ROUTES.DASHBOARD,
-    color: 'text-warning',
-    bg: 'bg-warning/10',
-  },
 ]
 
 export default function QuickActions({ stats = [], loading = false }) {
@@ -64,9 +56,6 @@ export default function QuickActions({ stats = [], loading = false }) {
                 </span>
                 {!loading && title === 'Mock Interview' && statsById.interviews != null && (
                   <span className="text-xs font-medium text-muted">{statsById.interviews} completed</span>
-                )}
-                {!loading && title === 'Dashboard' && statsById.sessions != null && (
-                  <span className="text-xs font-medium text-muted">{statsById.sessions} sessions</span>
                 )}
               </div>
               <div className="space-y-2">

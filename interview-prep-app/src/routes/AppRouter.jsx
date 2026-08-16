@@ -3,7 +3,6 @@ import { ROUTES } from '../constants/routes'
 import {
   AIMentorPage,
   ChangePasswordPage,
-  DashboardPage,
   ForgotPasswordPage,
   GithubCallbackPage,
   HomePage,
@@ -67,7 +66,7 @@ export const router = createBrowserRouter([
       },
       {
         path: ROUTES.DASHBOARD,
-        element: <DashboardPage />,
+        element: <Navigate to={ROUTES.HOME} replace />,
       },
       {
         path: ROUTES.CHANGE_PASSWORD,

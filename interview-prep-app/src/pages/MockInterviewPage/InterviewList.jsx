@@ -22,9 +22,9 @@ export default function InterviewList({ activeFilter, onFilterChange, onStart })
   if (!selectedInterview) {
     return (
       <div className="space-y-5">
-        <div>
-          <p className="text-sm font-medium text-foreground">Choose an interview category</p>
-          <p className="mt-1 text-sm text-muted">Questions are generated fresh for the category you pick.</p>
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-semibold text-foreground">Choose an interview category</p>
+          <p className="text-sm text-muted">Questions are generated fresh for the category you pick.</p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -42,14 +42,14 @@ export default function InterviewList({ activeFilter, onFilterChange, onStart })
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Card className="h-full transition-colors hover:border-primary/35">
-                  <CardHeader className="gap-10 p-6 pb- 8">
-                    <span className="flex h-12 w-16  items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Card className="subtle-lift h-full overflow-hidden transition-colors hover:border-primary/35">
+                  <CardHeader className="gap-6 p-6">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
                       {Icon && <Icon className="h-5 w-5" />}
                     </span>
                     <div>
                       <CardTitle>{interview.title}</CardTitle>
-                      <p className="mt-2 text-sm leading-relaxed text-muted pb-10">{interview.description}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-muted">{interview.description}</p>
                     </div>
                   </CardHeader>
                 </Card>
@@ -73,7 +73,7 @@ export default function InterviewList({ activeFilter, onFilterChange, onStart })
         Change category
       </Button>
 
-      <Card>
+      <Card className="workspace-card">
         <CardContent className="space-y-5 pt-6">
           <div>
             <p className="text-sm font-medium text-foreground">Choose difficulty for {selectedInterview.title}</p>
@@ -89,8 +89,8 @@ export default function InterviewList({ activeFilter, onFilterChange, onStart })
                   onClick={() => chooseDifficulty(difficulty)}
                   className={`flex items-center justify-between rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
                     isSelected
-                      ? 'border-primary bg-primary/10 text-foreground'
-                      : 'border-border bg-secondary/50 text-muted hover:text-foreground'
+                      ? 'border-primary bg-primary text-primary-foreground shadow-md shadow-primary/15'
+                      : 'border-border bg-card text-muted hover:border-primary/30 hover:bg-secondary hover:text-foreground'
                   }`}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.98 }}

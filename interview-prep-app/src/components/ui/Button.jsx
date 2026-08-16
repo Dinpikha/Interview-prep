@@ -2,11 +2,11 @@ import { cn } from '../../lib/cn'
 
 const variants = {
   primary:
-    'bg-primary text-primary-foreground hover:bg-primary-hover focus-visible:ring-primary/50',
+    'bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover hover:shadow-md focus-visible:ring-primary/50',
   secondary:
     'bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-secondary/50',
   outline:
-    'border border-border bg-transparent text-foreground hover:bg-secondary focus-visible:ring-border',
+    'border border-border bg-card text-foreground hover:border-primary/25 hover:bg-secondary focus-visible:ring-border',
   ghost:
     'bg-transparent text-muted hover:bg-secondary hover:text-foreground focus-visible:ring-border',
 }

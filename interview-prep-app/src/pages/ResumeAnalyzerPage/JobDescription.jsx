@@ -1,20 +1,19 @@
 import { Briefcase, Sparkles, X } from 'lucide-react'
-import { Badge, Card, CardContent, CardHeader, CardTitle, Textarea } from '../../components/ui'
+import { Badge, Textarea } from '../../components/ui'
 
 export default function JobDescription({ value, onChange, onRemove }) {
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0
   const isThin = wordCount > 0 && wordCount < 30
 
   return (
-    <Card>
-      <CardHeader>
+    <section className="space-y-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/10 text-accent">
               <Briefcase className="h-4 w-4" />
             </span>
             <div>
-              <CardTitle>Job Description</CardTitle>
+              <h2 className="text-base font-semibold text-foreground">Target Role</h2>
               <p className="mt-1 text-xs text-muted-foreground">Optional</p>
             </div>
           </div>
@@ -36,9 +35,8 @@ export default function JobDescription({ value, onChange, onRemove }) {
             </button>
           )}
         </div>
-      </CardHeader>
 
-      <CardContent className="space-y-3 pt-4">
+      <div className="space-y-3">
         <p className="text-sm text-muted">
           Optional, but recommended for an accurate match score. If omitted, your resume will still
           be parsed without scoring.
@@ -76,7 +74,7 @@ export default function JobDescription({ value, onChange, onRemove }) {
             </button>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
