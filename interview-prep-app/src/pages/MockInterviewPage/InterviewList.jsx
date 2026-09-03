@@ -43,7 +43,7 @@ export default function InterviewList({ activeFilter, onFilterChange, onStart })
                 whileTap={{ scale: 0.98 }}
               >
                 <Card className="subtle-lift h-full overflow-hidden transition-colors hover:border-primary/35">
-                  <CardHeader className="gap-6 p-6">
+                  <CardHeader className="gap-6 p-6 pb-4">
                     <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
                       {Icon && <Icon className="h-5 w-5" />}
                     </span>

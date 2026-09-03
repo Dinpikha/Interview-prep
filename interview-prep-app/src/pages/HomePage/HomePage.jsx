@@ -180,8 +180,10 @@ export default function HomePage() {
                 Here’s where you are with your interview preparation and what to focus on next.
               </p>
             </div>
-            <Button onClick={() => navigate(ROUTES.AI_MENTOR)}>
-              <Bot className="h-4 w-4" />
+            <Button onClick={() => navigate(ROUTES.AI_MENTOR)}
+          
+              className="flex items-center justify-center p-8">
+              <Bot className="h-6 w-6" />
               Ask AI Mentor
             </Button>
           </div>
@@ -225,7 +227,7 @@ export default function HomePage() {
                 Complete practice sessions to populate readiness and progress metrics.
               </p>
             )}
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 ">
               <SkillChips title="Strengths" items={strengths} tone="success" />
               <SkillChips title="Needs Work" items={needsWork} tone="warning" />
             </div>
